@@ -137,3 +137,21 @@
 .collection-refresh:disabled{opacity:.55;cursor:wait}
 .collection-empty .collection-refresh{margin-top:18px}
 @media(max-width:600px){.collection-catalog-actions{justify-content:center}.collection-refresh{width:100%}}
+
+
+/* Quantity and order-review preview controls */
+.quantity-controls{display:flex;align-items:center;gap:10px;margin-top:8px;color:#f0d28d}
+.quantity-controls button{width:28px;height:28px;border:1px solid #a9823d;border-radius:3px;background:#100c07;color:#f5d995;font-size:18px;line-height:1;cursor:pointer}
+.quantity-controls button:hover{background:#3a280e}
+.checkout-review{display:grid;gap:10px;margin:18px 0;padding:14px;border-top:1px solid #8d672f;border-bottom:1px solid #8d672f;text-align:left}
+.checkout-review>div{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;color:#e8dcc3;font-size:14px}
+.checkout-review strong{color:#f5d995;white-space:nowrap}
+.checkout-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0;text-align:left}
+.checkout-fields label{display:grid;gap:6px;color:#e5c77f;font-size:12px;letter-spacing:.3px}
+.checkout-fields input{width:100%;min-width:0;border:1px solid #6e5128;border-radius:3px;background:#090807;color:#f5ead2;padding:11px;font:inherit;font-size:14px;outline:none}
+.checkout-fields input:focus{border-color:#e3b75b;box-shadow:0 0 0 2px #d9a94f22}
+.checkout-payment{display:flex;flex-wrap:wrap;gap:16px;margin:16px 0;padding:13px;border:1px solid #765323;text-align:left;color:#ead7ad}
+.checkout-payment legend{padding:0 7px;color:#f0ca75;font-size:13px}
+.checkout-payment label{display:flex;align-items:center;gap:8px;font-size:14px}
+.checkout-payment input{accent-color:#d9a94f}
+@media(max-width:520px){.checkout-fields{grid-template-columns:1fr}.checkout-review>div{font-size:12px}}
