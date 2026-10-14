@@ -94,3 +94,28 @@
 .language-name{white-space:nowrap}
 .language-code{justify-self:end;font-size:10px;letter-spacing:1px;color:#d9a94f}
 @media(max-width:600px){.language-menu{width:200px;max-height:340px;left:0}.language-option{padding:9px 7px}}
+
+
+/* Regal NEXORA legal popups — gold filigree, classic typography, close with X */
+.footer-links button{appearance:none;background:transparent;border:0;border-right:1px solid #9d753c;padding:0 12px;color:#e6cb8e;font-family:inherit;font-size:13px;cursor:pointer;transition:color .2s,text-shadow .2s}
+.footer-links button:last-child{border-right:0}
+.footer-links button:hover{color:#fff0bd;text-shadow:0 0 10px #e2b657}
+.nexora-legal-backdrop{position:fixed;z-index:1000;inset:0;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.84);backdrop-filter:blur(8px);animation:nexoraFadeIn .2s ease-out}
+.nexora-legal-modal{position:relative;width:min(760px,100%);max-height:min(88vh,900px);overflow:auto;padding:34px clamp(20px,5vw,55px) 24px;text-align:center;color:#f4e8cd;background:radial-gradient(ellipse at 50% 0%,#34220d 0%,#100c07 37%,#050505 78%);border:1px solid #e3b75b;outline:1px solid #805b27;outline-offset:-7px;box-shadow:0 0 0 1px #1a1208,0 0 35px #d9a94f30,0 25px 90px #000;scrollbar-color:#9e743b #080706}
+.nexora-legal-modal:before,.nexora-legal-modal:after{content:"✧ ❖ ✧";display:block;color:#e4b95f;letter-spacing:9px;font-size:13px}
+.nexora-legal-close{position:sticky;top:0;float:right;margin:-14px -20px 0 0;width:39px;height:39px;display:grid;place-items:center;border:1px solid #d9a94f;border-radius:50%;background:linear-gradient(145deg,#30200b,#070707);color:#ffe5a2;font-family:Georgia,serif;font-size:29px;line-height:1;cursor:pointer;box-shadow:0 0 15px #d9a94f25;transition:transform .2s,background .2s}
+.nexora-legal-close:hover{transform:rotate(90deg);background:#55380f}
+.nexora-legal-crown{clear:both;color:#f0ca75;font-size:36px;line-height:1.1;text-shadow:0 0 15px #d9a94f66}
+.nexora-legal-brand{font-size:clamp(32px,5vw,45px);font-weight:500;letter-spacing:9px;color:#ffe6aa;text-shadow:0 0 20px #d9a94f50}
+.nexora-legal-subtitle{font-size:10px;letter-spacing:3px;color:#d4b779;margin-top:5px}
+.nexora-legal-ornament{color:#bd8b3e;letter-spacing:4px;margin:17px 0}
+.nexora-legal-modal h2{font-weight:400;font-size:clamp(25px,4vw,35px);color:#ffe6b0;margin:0 0 22px}
+.nexora-legal-content{text-align:left;max-width:600px;margin:0 auto;color:#e3d4b8;font-size:17px;line-height:1.7}
+.nexora-legal-content h3{font-weight:500;font-size:20px;color:#eac16b;border-bottom:1px solid #6e4d23;padding-bottom:6px;margin:24px 0 9px}
+.nexora-legal-content p{margin:12px 0}
+.nexora-legal-content strong{color:#fff0c8;font-weight:600}
+.nexora-legal-content a,.nexora-legal-bottom a{color:#f0c76f;text-decoration:underline;text-decoration-color:#7e5b2c;text-underline-offset:4px;overflow-wrap:anywhere}
+.nexora-legal-bottom{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:13px;border-top:1px solid #765323;margin:23px auto 0;padding-top:17px;font-size:13px;letter-spacing:.3px}
+.nexora-legal-bottom span{color:#b68a42}
+@keyframes nexoraFadeIn{from{opacity:0}to{opacity:1}}
+@media(max-width:600px){.footer-links button{padding:5px 8px;font-size:12px}.nexora-legal-backdrop{padding:10px}.nexora-legal-modal{padding:26px 20px 20px;max-height:92vh}.nexora-legal-close{margin:-7px -8px 0 0;width:35px;height:35px}.nexora-legal-content{font-size:15px}.nexora-legal-bottom{gap:8px;font-size:12px}}
