@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/api/"],
     },
-    sitemap: "https://nexorao-vip-store.vercel.app/sitemap.xml",
+    sitemap: "https://nexoraonline.de/sitemap.xml",
   };
 }
