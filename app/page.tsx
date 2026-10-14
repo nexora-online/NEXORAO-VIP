@@ -27,12 +27,7 @@ const categories = [
 type Product = { id: number; name: string; brand: string; category: string; price: number; image: string; tag: string; };
 type CatalogResponse = { products?: Array<{ id: string; name: string; brand: string; category: string; price: number; image: string; supplier: string; available: boolean }>; source?: string; message?: string };
 
-const products: Product[] = [
-  { id: 1, name: "Abendtasche Noir", brand: "NEXORA EDITION", category: "ACCESSOIRES", price: 129, image: "photo-1584917865442-de89df76afd3", tag: "VIP SELECTION" },
-  { id: 2, name: "Goldene Chronograph-Uhr", brand: "TIMELESS", category: "SCHMUCK & UHREN", price: 249, image: "photo-1523170335258-f5ed11844a49", tag: "EXCLUSIVE" },
-  { id: 3, name: "Signature Parfum", brand: "MAISON PRIVÉE", category: "BEAUTY", price: 89, image: "photo-1541643600914-78b084683601", tag: "VIP SELECTION" },
-  { id: 4, name: "Abendkleid Noir", brand: "NEXORA EDITION", category: "DAMEN", price: 219, image: "photo-1566174053879-31528523f8ae", tag: "LIMITED" },
-];
+const products: Product[] = [];
 
 export default function Home() {
   const [search, setSearch] = useState("");
