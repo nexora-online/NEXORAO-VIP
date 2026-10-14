@@ -119,3 +119,12 @@
 .nexora-legal-bottom span{color:#b68a42}
 @keyframes nexoraFadeIn{from{opacity:0}to{opacity:1}}
 @media(max-width:600px){.footer-links button{padding:5px 8px;font-size:12px}.nexora-legal-backdrop{padding:10px}.nexora-legal-modal{padding:26px 20px 20px;max-height:92vh}.nexora-legal-close{margin:-7px -8px 0 0;width:35px;height:35px}.nexora-legal-content{font-size:15px}.nexora-legal-bottom{gap:8px;font-size:12px}}
+
+
+/* Calligraphic founder signature — discreet luxury styling for the Impressum */
+.nexora-owner-signature{margin:15px auto 18px;padding:18px 12px 16px;max-width:510px;text-align:center;border-top:1px solid #8d672f;border-bottom:1px solid #8d672f;background:radial-gradient(ellipse at center,#2a1a0a66,transparent 72%);position:relative}
+.nexora-owner-signature:before,.nexora-owner-signature:after{content:"✧";position:absolute;top:50%;transform:translateY(-50%);color:#d9a94f;font-size:17px}
+.nexora-owner-signature:before{left:12px}.nexora-owner-signature:after{right:12px}
+.nexora-owner-name{font-family:'Italianno','Cormorant Garamond',Georgia,serif!important;font-size:clamp(35px,6vw,49px);font-weight:400!important;line-height:1.15;letter-spacing:.4px;color:#ffe2a0!important;text-shadow:0 0 15px #d9a94f35,0 1px 1px #000;display:block}
+.nexora-owner-caption{display:block;margin-top:6px;color:#c6a76b;font-size:9px;letter-spacing:3px;text-transform:uppercase}
+@media(max-width:480px){.nexora-owner-signature:before{left:5px}.nexora-owner-signature:after{right:5px}.nexora-owner-name{font-size:35px}}
