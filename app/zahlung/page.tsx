@@ -1,0 +1,2 @@
+import InfoPage from "../components/info-page";
+export default function Page(){return <InfoPage title="Zahlungsarten"><p>Die Zahlungsabwicklung ist noch nicht aktiviert. Es werden keine Kartendaten erhoben und keine Zahlungen über diese Vorschau angenommen.</p><p>Verfügbare Zahlungsarten und Zahlungsdienstleister werden hier erst genannt, wenn die Konten und die rechtlichen Voraussetzungen vollständig eingerichtet und getestet sind.</p></InfoPage>}
