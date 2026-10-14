@@ -128,3 +128,12 @@
 .nexora-owner-name{font-family:'Italianno','Cormorant Garamond',Georgia,serif!important;font-size:clamp(35px,6vw,49px);font-weight:400!important;line-height:1.15;letter-spacing:.4px;color:#ffe2a0!important;text-shadow:0 0 15px #d9a94f35,0 1px 1px #000;display:block}
 .nexora-owner-caption{display:block;margin-top:6px;color:#c6a76b;font-size:9px;letter-spacing:3px;text-transform:uppercase}
 @media(max-width:480px){.nexora-owner-signature:before{left:5px}.nexora-owner-signature:after{right:5px}.nexora-owner-name{font-size:35px}}
+
+
+/* Catalog refresh controls: match the fixed black-and-gold VIP identity */
+.collection-catalog-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap}
+.collection-refresh{appearance:none;border:1px solid #c99a45;border-radius:3px;padding:10px 15px;background:linear-gradient(135deg,#211708,#080706);color:#f5d995;font:inherit;font-size:12px;letter-spacing:.4px;cursor:pointer;transition:background .2s,border-color .2s,opacity .2s}
+.collection-refresh:hover:not(:disabled){background:linear-gradient(135deg,#49300d,#100b05);border-color:#ffe2a0}
+.collection-refresh:disabled{opacity:.55;cursor:wait}
+.collection-empty .collection-refresh{margin-top:18px}
+@media(max-width:600px){.collection-catalog-actions{justify-content:center}.collection-refresh{width:100%}}
