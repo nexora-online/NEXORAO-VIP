@@ -1,0 +1,1 @@
+export const MAX_CATALOG_PRODUCTS=1000; export const STORE_CURRENCY="EUR"; export const SUPPORTED_CATEGORIES=["DAMEN","HERREN","SCHMUCK & UHREN","BEAUTY","ACCESSOIRES","LIFESTYLE"] as const; export const DEFAULT_SUPPLIER="BrandsGateway";
