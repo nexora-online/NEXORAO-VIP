@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const categories = [
   { name: "DAMEN", subtitle: "Eleganz für jeden Moment", image: "photo-1483985988355-763728e1935b" },
@@ -11,7 +11,10 @@ const categories = [
   { name: "LIFESTYLE", subtitle: "Ein Leben mit Stil", image: "photo-1600210492486-724fe5c67fb0" },
 ];
 
-const products = [
+type Product = { id: number; name: string; brand: string; category: string; price: number; image: string; tag: string; };
+type CatalogResponse = { products?: Array<{ id: string; name: string; brand: string; category: string; price: number; image: string; supplier: string; available: boolean }>; source?: string; message?: string };
+
+const products: Product[] = [
   { id: 1, name: "Abendtasche Noir", brand: "NEXORA EDITION", category: "ACCESSOIRES", price: 129, image: "photo-1584917865442-de89df76afd3", tag: "VIP SELECTION" },
   { id: 2, name: "Goldene Chronograph-Uhr", brand: "TIMELESS", category: "SCHMUCK & UHREN", price: 249, image: "photo-1523170335258-f5ed11844a49", tag: "EXCLUSIVE" },
   { id: 3, name: "Signature Parfum", brand: "MAISON PRIVÉE", category: "BEAUTY", price: 89, image: "photo-1541643600914-78b084683601", tag: "VIP SELECTION" },
@@ -26,9 +29,26 @@ export default function Home() {
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [notice, setNotice] = useState("");
-  const cartProducts = cart.map((id, index) => ({ ...products.find(p => p.id === id)!, key: `${id}-${index}` }));
+  const [supplierProducts, setSupplierProducts] = useState<Product[]>([]);
+  const [catalogMessage, setCatalogMessage] = useState("");
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/catalog?limit=1000", { cache: "no-store" })
+      .then(response => response.json())
+      .then((data: CatalogResponse) => {
+        if (!alive) return;
+        const imported = (data.products ?? []).slice(0, 1000).map((p, index) => ({ id: 1001 + index, name: p.name, brand: p.brand || p.supplier, category: p.category || "LIFESTYLE", price: p.price, image: p.image, tag: "LIEFERANT" }));
+        setSupplierProducts(imported);
+        setCatalogMessage(data.source === "supplier-feed" ? `${imported.length} Lieferantenprodukte geladen` : data.message ?? "Lieferantenkatalog noch nicht verbunden");
+      })
+      .catch(() => { if (alive) setCatalogMessage("Lieferantenkatalog derzeit nicht erreichbar"); });
+    return () => { alive = false; };
+  }, []);
+  const allProducts = useMemo(() => [...products, ...supplierProducts], [supplierProducts]);
+  const imageUrl = (image: string, width = 800) => /^https?:\/\//i.test(image) ? image : `https://images.unsplash.com/${image}?auto=format&fit=crop&w=${width}&q=85`;
+  const cartProducts = cart.map((id, index) => ({ ...allProducts.find(p => p.id === id), key: `${id}-${index}` })).filter((p): p is Product & { key: string } => Boolean(p.id));
   const cartTotal = cartProducts.reduce((sum, p) => sum + p.price, 0);
-  const filtered = useMemo(() => products.filter(p => (active === "ALLE" || p.category === active) && (p.name + p.brand + p.category).toLowerCase().includes(search.toLowerCase())), [active, search]);
+  const filtered = useMemo(() => allProducts.filter(p => (active === "ALLE" || p.category === active) && (p.name + p.brand + p.category).toLowerCase().includes(search.toLowerCase())), [active, search, allProducts]);
   const money = (price: number) => new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 2 }).format(price);
 
   return <main>
@@ -58,19 +78,20 @@ export default function Home() {
       </aside>
     </section>
 
-    <section className="categories" id="kollektionen" aria-label="Kollektionen">{categories.map(c => <a className="category-card" key={c.name} href="#produkte" style={{backgroundImage:`linear-gradient(0deg,rgba(0,0,0,.92),rgba(0,0,0,.03) 75%),url(https://images.unsplash.com/${c.image}?auto=format&fit=crop&w=800&q=85)`}}><span className="vip-stamp">VIP</span><div><h2>{c.name}</h2><p>{c.subtitle}</p><span className="discover">JETZT ENTDECKEN ⟶</span></div></a>)}</section>
+    <section className="categories" id="kollektionen" aria-label="Kollektionen">{categories.map(c => <a className="category-card" key={c.name} href="#produkte" style={{backgroundImage:`linear-gradient(0deg,rgba(0,0,0,.92),rgba(0,0,0,.03) 75%),url(${imageUrl(c.image)})`}}><span className="vip-stamp">VIP</span><div><h2>{c.name}</h2><p>{c.subtitle}</p><span className="discover">JETZT ENTDECKEN ⟶</span></div></a>)}</section>
 
     <section className="product-section" id="produkte">
       <div className="section-heading"><span>CURATED FOR YOU</span><h2>Die Kunst des Besonderen</h2><p>Eine Auswahl mit Charakter. Für Momente, die bleiben.</p></div>
       <div className="filters"><button className={active === "ALLE" ? "selected" : ""} onClick={() => setActive("ALLE")}>ALLE</button>{categories.map(c => <button key={c.name} className={active === c.name ? "selected" : ""} onClick={() => setActive(c.name)}>{c.name}</button>)}</div>
-      <div className="products">{filtered.map(p => <article className="product-card" key={p.id}><div className="product-image" style={{backgroundImage:`url(https://images.unsplash.com/${p.image}?auto=format&fit=crop&w=800&q=85)`}}><span className="product-tag">{p.tag}</span><button className="heart" aria-label="Zu Favoriten hinzufügen" onClick={() => setFavorites(old => old.includes(p.id) ? old.filter(id => id !== p.id) : [...old, p.id])}>{favorites.includes(p.id) ? "♥" : "♡"}</button></div><div className="product-info"><small>{p.brand}</small><h3>{p.name}</h3><div className="product-bottom"><strong>{money(p.price)}</strong><button onClick={() => setCart(old => [...old, p.id])}>IN DEN WARENKORB +</button></div></div></article>)}</div>
+      <div className="products">{filtered.map(p => <article className="product-card" key={p.id}><div className="product-image" style={{backgroundImage:`url(${imageUrl(p.image)})`}}><span className="product-tag">{p.tag}</span><button className="heart" aria-label="Zu Favoriten hinzufügen" onClick={() => setFavorites(old => old.includes(p.id) ? old.filter(id => id !== p.id) : [...old, p.id])}>{favorites.includes(p.id) ? "♥" : "♡"}</button></div><div className="product-info"><small>{p.brand}</small><h3>{p.name}</h3><div className="product-bottom"><strong>{money(p.price)}</strong><button onClick={() => setCart(old => [...old, p.id])}>IN DEN WARENKORB +</button></div></div></article>)}</div>
       {filtered.length === 0 && <p className="empty">Keine Produkte gefunden. Bitte ändern Sie Ihre Suche.</p>}
       <p className="demo-note">Produktdarstellung zur Gestaltungsvorschau · Preise und Artikel sind Beispiele, noch nicht käuflich.</p>
+      {catalogMessage && <p className="catalog-status" role="status">{catalogMessage}</p>}
       {notice && <div className="notice-bar" role="status">{notice}<button onClick={() => setNotice("")} aria-label="Hinweis schließen">×</button></div>}
     </section>
 
     <section className="benefits"><div><span>◇</span><strong>EXKLUSIVE AUSWAHL</strong><small>Mit Sorgfalt kuratiert</small></div><div><span>◎</span><strong>WELTWEITER VERSAND</strong><small>Details je nach Liefergebiet</small></div><div><span>♙</span><strong>SICHERER CHECKOUT</strong><small>Geschützte Zahlungsabwicklung</small></div><div><span>♧</span><strong>VIP SUPPORT</strong><small>Persönlich & diskret</small></div><div className="signature">Nexora<br/><i>For a life of elegance</i></div></section>
-    {cartOpen && <div className="drawer-backdrop" onClick={() => setCartOpen(false)}><aside className="cart-drawer" role="dialog" aria-modal="true" aria-label="Warenkorb" onClick={e => e.stopPropagation()}><div className="drawer-title"><div><small>NEXORA VIP</small><h2>Ihr Warenkorb</h2></div><button className="drawer-close" onClick={() => setCartOpen(false)} aria-label="Warenkorb schließen">×</button></div>{cartProducts.length === 0 ? <p className="cart-empty">Ihr Warenkorb ist noch leer.</p> : <div className="cart-items">{cartProducts.map(p => <div className="cart-item" key={p.key}><div className="cart-thumb" style={{backgroundImage:`url(https://images.unsplash.com/${p.image}?auto=format&fit=crop&w=200&q=80)`}}/><div className="cart-item-copy"><strong>{p.name}</strong><small>{p.brand}</small><b>{money(p.price)}</b></div><button className="remove-item" aria-label={`${p.name} entfernen`} onClick={() => setCart(old => { const i = old.indexOf(p.id); return i < 0 ? old : [...old.slice(0,i), ...old.slice(i+1)]; })}>×</button></div>)}</div>}<div className="cart-summary"><div><span>Zwischensumme</span><strong>{money(cartTotal)}</strong></div><small>Versandkosten und Steuern werden später anhand der Lieferadresse berechnet.</small><button className="gold-button checkout-button" disabled={!cart.length} onClick={() => setCheckoutOpen(true)}>ZUR KASSE <span>⟶</span></button><p className="checkout-disclaimer">Der Shop befindet sich in der Vorschau. Es werden derzeit keine Zahlungen angenommen.</p></div></aside></div>}
+    {cartOpen && <div className="drawer-backdrop" onClick={() => setCartOpen(false)}><aside className="cart-drawer" role="dialog" aria-modal="true" aria-label="Warenkorb" onClick={e => e.stopPropagation()}><div className="drawer-title"><div><small>NEXORA VIP</small><h2>Ihr Warenkorb</h2></div><button className="drawer-close" onClick={() => setCartOpen(false)} aria-label="Warenkorb schließen">×</button></div>{cartProducts.length === 0 ? <p className="cart-empty">Ihr Warenkorb ist noch leer.</p> : <div className="cart-items">{cartProducts.map(p => <div className="cart-item" key={p.key}><div className="cart-thumb" style={{backgroundImage:`url(${imageUrl(p.image, 200)})`}}/><div className="cart-item-copy"><strong>{p.name}</strong><small>{p.brand}</small><b>{money(p.price)}</b></div><button className="remove-item" aria-label={`${p.name} entfernen`} onClick={() => setCart(old => { const i = old.indexOf(p.id); return i < 0 ? old : [...old.slice(0,i), ...old.slice(i+1)]; })}>×</button></div>)}</div>}<div className="cart-summary"><div><span>Zwischensumme</span><strong>{money(cartTotal)}</strong></div><small>Versandkosten und Steuern werden später anhand der Lieferadresse berechnet.</small><button className="gold-button checkout-button" disabled={!cart.length} onClick={() => setCheckoutOpen(true)}>ZUR KASSE <span>⟶</span></button><p className="checkout-disclaimer">Der Shop befindet sich in der Vorschau. Es werden derzeit keine Zahlungen angenommen.</p></div></aside></div>}
     {checkoutOpen && <div className="modal-backdrop" onClick={() => setCheckoutOpen(false)}><section className="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-title" onClick={e => e.stopPropagation()}><button className="drawer-close modal-x" onClick={() => setCheckoutOpen(false)} aria-label="Dialog schließen">×</button><span className="modal-crown">♛</span><small>NEXORA VIP</small><h2 id="checkout-title">Checkout wird vorbereitet</h2><p>Der Warenkorb funktioniert. Für echte Bestellungen müssen Zahlungsanbieter, Geschäftsdaten, Steuern, Versand und rechtliche Seiten vor dem Livegang eingerichtet und geprüft werden.</p><div className="checkout-total"><span>Warenkorb-Summe</span><strong>{money(cartTotal)}</strong></div><button className="gold-button" onClick={() => { setCheckoutOpen(false); setCartOpen(false); setNotice("Checkout-Vorschau: Es wurde keine Bestellung erstellt und keine Zahlung ausgelöst."); }}>VERSTANDEN</button></section></div>}
     <footer className="footer"><div className="footer-brand"><span>♛</span><strong>NEXORA</strong><small>A BRAND OF DIGITAL FUTURE</small></div><div className="footer-links"><a href="#impressum">Impressum</a><a href="#datenschutz">Datenschutz</a><a href="#agb">AGB</a><a href="#widerruf">Widerruf & Rückgabe</a><a href="#versand">Versand & Zahlung</a><a href="#kontakt">Kontakt</a></div><div className="footer-bottom">© 2026 NEXORA · Eine Marke von digital future · Alle Rechte vorbehalten.<br/><small>Vor dem Verkaufsstart sind rechtliche Angaben, Produktdaten und Zahlungsanbieter zu vervollständigen.</small></div></footer>
   </main>;
