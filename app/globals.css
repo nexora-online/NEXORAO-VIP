@@ -6,3 +6,23 @@
 
 /* NEXORA signature finish: restrained romantic gold glow, double frames and VIP highlights */
 .category-card:before{content:'✦';position:absolute;top:9px;right:12px;color:#ffe3a0;text-shadow:0 0 9px #e5ad43;font-size:16px;opacity:.9}.section-heading h2{color:#f7e5bd;text-shadow:0 0 18px #bd873b33}.brand-name,.footer-brand strong{font-family:'Cormorant Garamond',Georgia,serif}.vip-heading>span{box-shadow:0 0 10px #d6a34522,inset 0 0 9px #d6a34522}.footer{box-shadow:inset 0 0 22px #d5a44b0d}.footer:after{content:'✧';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);color:#dcb45f;text-shadow:0 0 10px #e8b957;font-size:17px}
+
+
+/* Interactive cart drawer and checkout preview */
+.drawer-backdrop,.modal-backdrop{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.76);backdrop-filter:blur(5px);display:flex;justify-content:flex-end}
+.cart-drawer{width:min(470px,100%);height:100%;overflow:auto;background:linear-gradient(145deg,#12100c,#050607 60%);border-left:1px solid var(--gold);box-shadow:-15px 0 45px #000;padding:25px;display:flex;flex-direction:column}
+.drawer-title{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #72562c;padding-bottom:18px}
+.drawer-title small,.checkout-modal>small{letter-spacing:3px;color:var(--gold)}
+.drawer-title h2,.checkout-modal h2{font-size:32px;font-weight:400;margin:4px 0;color:var(--ivory)}
+.drawer-close{background:transparent;border:1px solid #a17b40;color:var(--gold-bright);width:39px;height:39px;border-radius:50%;font-size:27px;cursor:pointer}
+.cart-empty{color:var(--muted);text-align:center;margin:auto 0;font-size:19px}
+.cart-items{padding:12px 0;flex:1}
+.cart-item{display:flex;align-items:center;gap:13px;padding:13px 0;border-bottom:1px solid #332719}
+.cart-thumb{width:72px;height:82px;flex-shrink:0;background-size:cover;background-position:center;border:1px solid var(--gold)}
+.cart-item-copy{display:flex;flex-direction:column;gap:5px;flex:1}
+.cart-item-copy strong{font-weight:500;font-size:19px}.cart-item-copy small{color:#bba77f;font-size:11px;letter-spacing:1px}.cart-item-copy b{color:var(--gold-bright);font-size:17px;font-weight:500}
+.remove-item{border:1px solid #614a28;color:#dfc68f;background:transparent;border-radius:50%;width:30px;height:30px;font-size:20px;cursor:pointer}
+.cart-summary{border-top:1px solid #72562c;padding-top:18px;margin-top:auto}.cart-summary>div,.checkout-total{display:flex;justify-content:space-between;align-items:center;font-size:18px}.cart-summary>div strong,.checkout-total strong{font-size:25px;color:var(--gold-bright)}.cart-summary>small{display:block;color:#b9aa90;font-size:12px;line-height:1.5;margin-top:8px}
+.checkout-button{width:100%;justify-content:center;cursor:pointer}.checkout-button:disabled{opacity:.35;cursor:not-allowed}.checkout-disclaimer{font-size:12px;color:#b8a98d;text-align:center;line-height:1.5}
+.modal-backdrop{justify-content:center;align-items:center;padding:18px}.checkout-modal{position:relative;width:min(510px,100%);padding:35px 30px;text-align:center;background:linear-gradient(145deg,#17130d,#060708);border:1px solid var(--gold);box-shadow:0 0 0 4px #5a411d,0 20px 80px #000}.modal-x{position:absolute;right:13px;top:13px}.modal-crown{display:block;font-size:36px;color:var(--gold-bright);margin-bottom:8px}.checkout-modal p{color:#d0c2a7;font-size:16px;line-height:1.65}.checkout-total{border-top:1px solid #5a4528;border-bottom:1px solid #5a4528;padding:15px 0;margin:20px 0}.checkout-modal .gold-button{cursor:pointer}.notice-bar{max-width:750px;margin:18px auto 0;border:1px solid #8d6d37;color:var(--gold-bright);padding:12px 15px;display:flex;justify-content:space-between;align-items:center;gap:12px}.notice-bar button{border:0;background:transparent;color:var(--gold-bright);font-size:24px;cursor:pointer}
+@media(max-width:520px){.cart-drawer{padding:18px}.checkout-modal{padding:32px 20px}.drawer-title h2,.checkout-modal h2{font-size:27px}}
