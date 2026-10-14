@@ -1,0 +1,3 @@
+import { NextResponse } from "next/server";
+export const dynamic="force-dynamic";
+export async function GET(){const configured=Boolean(process.env.SUPPLIER_CATALOG_URL);let validUrl=false;try{if(process.env.SUPPLIER_CATALOG_URL){const u=new URL(process.env.SUPPLIER_CATALOG_URL);validUrl=u.protocol==="https:";}}catch{}return NextResponse.json({supplier:"BrandsGateway (planned)",feedConfigured:configured,feedUrlValid:validUrl,tokenConfigured:Boolean(process.env.SUPPLIER_CATALOG_TOKEN),cronSecretConfigured:Boolean(process.env.CRON_SECRET),integrationState:configured&&validUrl?"feed-configured":"awaiting-supplier-credentials",note:"A configured feed is not proof of a successful supplier API integration."},{headers:{"Cache-Control":"no-store"}});}
