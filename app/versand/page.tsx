@@ -1,0 +1,2 @@
+import InfoPage from "../components/info-page";
+export default function Page(){return <InfoPage title="Versand und Lieferung"><p>Versandarten, Liefergebiete, Kosten und Lieferzeiten stehen noch nicht verbindlich fest, da die Lieferantenanbindung noch vorbereitet wird.</p><p>Es werden derzeit keine Bestellungen angenommen. Verbindliche Angaben werden veröffentlicht, sobald Lieferpartner, Versandkosten und Bearbeitungszeiten bestätigt sind.</p></InfoPage>}
