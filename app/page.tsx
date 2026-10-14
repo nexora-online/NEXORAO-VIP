@@ -42,8 +42,11 @@ export default function Home() {
   const [notice, setNotice] = useState("");
   const [supplierProducts, setSupplierProducts] = useState<Product[]>([]);
   const [catalogMessage, setCatalogMessage] = useState("");
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogAttempt, setCatalogAttempt] = useState(0);
   useEffect(() => {
     let alive = true;
+    setCatalogLoading(true);
     fetch("/api/catalog?limit=1000", { cache: "no-store" })
       .then(response => response.json())
       .then((data: CatalogResponse) => {
@@ -52,9 +55,10 @@ export default function Home() {
         setSupplierProducts(imported);
         setCatalogMessage(data.source === "supplier-feed" ? `${imported.length} Lieferantenprodukte geladen` : data.message ?? "Lieferantenkatalog noch nicht verbunden");
       })
-      .catch(() => { if (alive) setCatalogMessage("Lieferantenkatalog derzeit nicht erreichbar"); });
+      .catch(() => { if (alive) setCatalogMessage("Lieferantenkatalog derzeit nicht erreichbar"); })
+      .finally(() => { if (alive) setCatalogLoading(false); });
     return () => { alive = false; };
-  }, []);
+  }, [catalogAttempt]);
   const allProducts = useMemo(() => [...products, ...supplierProducts], [supplierProducts]);
   const imageUrl = (image: string, width = 800) => /^https?:\/\//i.test(image) ? image : `https://images.unsplash.com/${image}?auto=format&fit=crop&w=${width}&q=85`;
   const cartProducts = [...new Set(cart)].map(id => { const product = allProducts.find(p => p.id === id); return product ? { ...product, quantity: cart.filter(cartId => cartId === id).length } : null; }).filter((p): p is Product & { quantity: number } => Boolean(p));
@@ -95,7 +99,7 @@ export default function Home() {
       <div className="section-heading"><span>CURATED FOR YOU</span><h2>Die Kunst des Besonderen</h2><p>Eine Auswahl mit Charakter. Für Momente, die bleiben.</p></div>
       <div className="filters"><button className={active === "ALLE" ? "selected" : ""} onClick={() => setActive("ALLE")}>ALLE</button>{categories.map(c => <button key={c.name} className={active === c.name ? "selected" : ""} onClick={() => setActive(c.name)}>{c.name}</button>)}</div>
       <div className="products">{filtered.map(p => <article className="product-card" key={p.id}><div className="product-image" style={{backgroundImage:`url(${imageUrl(p.image)})`}}><span className="product-tag">{p.tag}</span><button className="heart" aria-label="Zu Favoriten hinzufügen" onClick={() => setFavorites(old => old.includes(p.id) ? old.filter(id => id !== p.id) : [...old, p.id])}>{favorites.includes(p.id) ? "♥" : "♡"}</button></div><div className="product-info"><small>{p.brand}</small><h3>{p.name}</h3><div className="product-bottom"><strong>{money(p.price)}</strong><button onClick={() => setCart(old => [...old, p.id])}>IN DEN WARENKORB +</button></div></div></article>)}</div>
-      {filtered.length === 0 && <p className="empty">Keine Produkte gefunden. Bitte ändern Sie Ihre Suche.</p>}
+      {filtered.length === 0 && <div className="empty-catalog" role="status"><span className="empty-catalog-crown">♛</span><h3>{search ? "Keine passenden Produkte gefunden" : catalogLoading ? "Ihre VIP-Auswahl wird geladen" : "Die Kollektion wird vorbereitet"}</h3><p>{search ? "Bitte ändern Sie Ihre Suchbegriffe oder wählen Sie eine andere Kategorie." : catalogLoading ? "Der autorisierte Lieferantenkatalog wird abgefragt." : "Die Produktplätze sind vorbereitet. Echte Bilder, Produktdaten und Preise erscheinen nach der Verbindung zum Lieferanten."}</p>{!search && !catalogLoading && <button type="button" className="catalog-retry" onClick={() => setCatalogAttempt(value => value + 1)}>↻ Katalog erneut laden</button>}</div>}
       <p className="demo-note">{supplierProducts.length ? "Produktdaten und Preise werden aus dem verbundenen Lieferantenkatalog übernommen." : "Produktbilder und Preise erscheinen erst nach Verbindung des autorisierten Lieferantenkatalogs. Es werden keine Beispielprodukte oder erfundenen Preise angezeigt."}</p>
       {catalogMessage && <p className="catalog-status" role="status">{catalogMessage}</p>}
       {notice && <div className="notice-bar" role="status">{notice}<button onClick={() => setNotice("")} aria-label="Hinweis schließen">×</button></div>}
