@@ -1,0 +1,3 @@
+# Payment handling status
+
+Checkout UI is a preview and must not be represented as live payment processing. For production, use a provider-approved account, server-side checkout session creation, signature-verified webhooks, persistent orders, idempotency, refund support and audited state transitions. A successful customer payment and supplier payment are separate transactions; supplier payment automation depends on the supplier's actual billing terms and supported payment method.
