@@ -1,0 +1,2 @@
+import InfoPage from "../components/info-page";
+export default function Page(){return <InfoPage title="Kollektionen"><p>Entdecken Sie die geplanten NEXORA-Bereiche: Damen, Herren, Schmuck und Uhren, Beauty, Accessoires und Lifestyle.</p><p>Die gezeigten Beispielartikel dienen derzeit der visuellen Vorschau. Verfügbarkeit, Originalität, Preise und Lieferbarkeit werden vor einer späteren Freischaltung geprüft.</p></InfoPage>}
