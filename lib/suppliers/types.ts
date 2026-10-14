@@ -1,0 +1,3 @@
+export type SupplierProduct = { id: string | number; name?: string; title?: string; brand?: string; category?: string; price?: number | string; currency?: string; image?: string; imageUrl?: string; available?: boolean; stock?: number; sku?: string; };
+export type NormalizedSupplierProduct = { id: string; supplier: string; supplierProductId: string; sku: string | null; name: string; brand: string; category: string; price: number; currency: string; image: string; available: boolean; stock: number | null; };
+export type SupplierCatalogResult = { products: NormalizedSupplierProduct[]; source: string; fetchedAt: string; warnings: string[]; };
