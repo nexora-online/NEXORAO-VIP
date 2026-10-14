@@ -81,3 +81,16 @@
 @media(max-width:1100px){.collection-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.collection-product-image{height:260px}}
 @media(max-width:760px){.collection-header{padding:16px 5%}.collection-brand strong{font-size:27px}.collection-brand small{font-size:7px;letter-spacing:1px}.collection-home{font-size:12px;padding:9px 12px}.collection-hero{padding:42px 17px 35px}.collection-ornament{font-size:14px;letter-spacing:2px}.collection-kicker{letter-spacing:2px}.collection-hero>p:not(.collection-kicker){font-size:16px}.collection-catalog{padding:20px 4% 38px}.collection-toolbar{align-items:stretch;flex-direction:column;gap:10px}.collection-count{text-align:center}.collection-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.collection-product-image{height:clamp(165px,48vw,270px)}.collection-product-info{padding:13px 8px 16px}.collection-product-info h2{font-size:19px}.collection-product-info>small{font-size:9px;letter-spacing:1px}.collection-filters{gap:6px}.collection-filters button{padding:8px 10px;font-size:10px}}
 @media(max-width:380px){.collection-grid{grid-template-columns:1fr}.collection-product-image{height:280px}}
+
+
+/* Ten-language selector, integrated without changing the fixed NEXORA homepage layout */
+.language-picker{position:relative;z-index:80;flex-shrink:0}
+.language-picker .language{cursor:pointer;white-space:nowrap}
+.language-menu{position:absolute;top:calc(100% + 12px);left:0;width:220px;max-height:390px;overflow:auto;padding:7px;background:linear-gradient(145deg,#161008,#050505);border:1px solid #d9a94f;border-radius:10px;box-shadow:0 12px 40px #000d,0 0 18px #d9a94f2e}
+.language-menu:before{content:"✦  NEXORA · LANGUAGES  ✦";display:block;text-align:center;color:#eac16b;font-size:10px;letter-spacing:1.5px;padding:10px 4px;border-bottom:1px solid #5b431f;margin-bottom:5px}
+.language-option{display:grid;grid-template-columns:28px 1fr 28px;align-items:center;gap:7px;width:100%;text-align:left;padding:10px 9px;border:1px solid transparent;border-radius:5px;background:transparent;color:#e8dcc3;cursor:pointer;font-size:14px;transition:all .18s}
+.language-option:hover,.language-option.selected{background:linear-gradient(90deg,#33220b,#100c07);border-color:#9e743b;color:#ffe4a0}
+.language-flag{font-size:18px;line-height:1}
+.language-name{white-space:nowrap}
+.language-code{justify-self:end;font-size:10px;letter-spacing:1px;color:#d9a94f}
+@media(max-width:600px){.language-menu{width:200px;max-height:340px;left:0}.language-option{padding:9px 7px}}
