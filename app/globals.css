@@ -28,3 +28,56 @@
 @media(max-width:520px){.cart-drawer{padding:18px}.checkout-modal{padding:32px 20px}.drawer-title h2,.checkout-modal h2{font-size:27px}}
 
 .catalog-status{max-width:1200px;margin:18px auto;padding:10px 14px;border:1px solid #75552a;color:#d9b36a;background:rgba(10,8,5,.8);font-size:12px;letter-spacing:.5px;text-align:center}
+
+
+/* NEXORA VIP collections page — separate from the fixed homepage */
+.collection-page{min-height:100vh;background:#050607;color:#f5eedf;background-image:radial-gradient(ellipse at 50% 0%,#24180b 0%,#050607 55%);font-family:'Cormorant Garamond',Georgia,serif}
+.collection-header{display:flex;align-items:center;justify-content:space-between;padding:20px 5%;border-bottom:1px solid #9a7135;background:rgba(4,5,6,.95)}
+.collection-brand{display:flex;flex-direction:column;align-items:center;color:#ffe4a0;line-height:1}
+.collection-brand>span{font-size:27px;text-shadow:0 0 12px #d9a94f}
+.collection-brand strong{font-size:34px;letter-spacing:7px;font-weight:500;text-shadow:0 0 15px #a77c32}
+.collection-brand small{font-size:9px;letter-spacing:2px;margin-top:7px}
+.collection-home{border:1px solid #d9a94f;border-radius:30px;padding:10px 18px;color:#ffe4a0;font-size:14px;transition:background .2s,color .2s}
+.collection-home:hover{background:#d9a94f;color:#080706}
+.collection-hero{text-align:center;padding:60px 20px 46px;border-bottom:1px solid #9a7135;position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(24,17,9,.7),rgba(5,6,7,.96)),radial-gradient(ellipse at center,#593b16,#050607 70%)}
+.collection-ornament{color:#eac16b;letter-spacing:5px;font-size:20px}
+.collection-kicker{color:#eac16b;letter-spacing:5px;font-size:12px;margin:18px 0 9px}
+.collection-hero h1{font-size:clamp(34px,5vw,60px);font-weight:400;line-height:1.1;margin:0;color:#fff1d2;text-shadow:0 0 25px #d29a3c55}
+.collection-hero>p:not(.collection-kicker){font-size:19px;color:#d8c6a7;font-style:italic;margin:14px auto 0;max-width:700px}
+.collection-divider{color:#eac16b;margin-top:24px;letter-spacing:8px}
+.collection-catalog{max-width:1800px;margin:0 auto;padding:28px 3% 55px}
+.collection-toolbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:20px}
+.collection-search{display:flex;align-items:center;gap:10px;max-width:560px;width:100%;padding:11px 16px;border:1px solid #8d672f;border-radius:28px;background:#090909;box-shadow:inset 0 0 15px #c28a2710}
+.collection-search span{color:#f5cd79;font-size:25px;line-height:1}
+.collection-search input{width:100%;background:transparent;border:0;outline:0;color:#fff0d2;font-size:15px}
+.collection-search input::placeholder{color:#a99a80}
+.collection-count{color:#cdb88e;font-size:14px;white-space:nowrap}
+.collection-filters{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin:18px 0 30px}
+.collection-filters button{background:#090909;border:1px solid #614820;color:#d4c19e;padding:9px 15px;letter-spacing:1px;font-size:11px;cursor:pointer;transition:all .2s}
+.collection-filters button:hover,.collection-filters button.active{border-color:#f4cf7b;color:#ffe5a2;background:linear-gradient(135deg,#34220b,#100c07);box-shadow:0 0 13px #d9a94f2b}
+.collection-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px}
+.collection-product{position:relative;min-width:0;overflow:hidden;border:1px solid #e2b95f;border-radius:8px;background:linear-gradient(145deg,#18130b,#070707 55%);box-shadow:inset 0 0 0 4px #110c06,inset 0 0 20px #d9a94f20,0 0 12px #d9a94f26;transition:transform .25s,box-shadow .25s}
+.collection-product:before{content:"";position:absolute;z-index:2;inset:5px;border:1px solid #9e743b;pointer-events:none;border-radius:4px}
+.collection-product:hover{transform:translateY(-4px);box-shadow:inset 0 0 0 4px #110c06,inset 0 0 25px #d9a94f35,0 0 22px #d9a94f50}
+.collection-product-image{height:clamp(190px,24vw,330px);background-size:cover;background-position:center;position:relative;border-bottom:1px solid #8d672f}
+.collection-vip-stamp{position:absolute;top:16px;left:16px;width:42px;height:42px;display:grid;place-items:center;border:1px solid #f4d38b;border-radius:50%;background:radial-gradient(circle,#654513,#080706 70%);color:#ffe4a0;font-size:12px;letter-spacing:1px;box-shadow:0 0 14px #d9a94f66}
+.collection-product-number{position:absolute;right:15px;bottom:12px;color:#ffe4a0;font-size:12px;letter-spacing:2px;text-shadow:0 1px 8px #000}
+.collection-product-info{text-align:center;padding:17px 15px 19px;display:flex;align-items:center;flex-direction:column}
+.collection-product-info>small{font-size:10px;letter-spacing:2px;color:#d9a94f;text-transform:uppercase}
+.collection-product-info h2{font-weight:500;font-size:23px;line-height:1.2;margin:8px 0;color:#fff0d0}
+.collection-product-info p{font-size:12px;letter-spacing:1.5px;color:#c2ad87;margin:0 0 10px}
+.collection-product-info>strong{font-size:19px;font-weight:500;color:#ffe4a0}
+.collection-product-rule{font-size:11px;letter-spacing:4px;color:#b68a42;margin-top:12px}
+.collection-empty{max-width:720px;margin:55px auto;padding:45px 28px;text-align:center;border:1px solid #bd8c40;outline:1px solid #4e3518;outline-offset:-7px;background:radial-gradient(ellipse at top,#21170a,#070707 75%);box-shadow:0 0 30px #d9a94f1c}
+.collection-empty>span{font-size:40px;color:#ffe4a0}
+.collection-empty h2{font-weight:400;font-size:31px;color:#ffe4a0;margin:10px 0}
+.collection-empty p{font-size:17px;color:#e2cfaa}
+.collection-empty small{display:block;color:#aa9a7c;line-height:1.7;max-width:540px;margin:12px auto 0}
+.collection-status{text-align:center;color:#c6b28e;font-size:13px;margin-top:25px}
+.collection-footer{text-align:center;padding:25px 15px;border-top:1px solid #9a7135;background:#040505;color:#bca477}
+.collection-footer>span{color:#ffe4a0;letter-spacing:4px;font-size:19px}
+.collection-footer p{font-style:italic}
+.collection-footer a{color:#eac16b;text-decoration:underline;text-underline-offset:4px}
+@media(max-width:1100px){.collection-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.collection-product-image{height:260px}}
+@media(max-width:760px){.collection-header{padding:16px 5%}.collection-brand strong{font-size:27px}.collection-brand small{font-size:7px;letter-spacing:1px}.collection-home{font-size:12px;padding:9px 12px}.collection-hero{padding:42px 17px 35px}.collection-ornament{font-size:14px;letter-spacing:2px}.collection-kicker{letter-spacing:2px}.collection-hero>p:not(.collection-kicker){font-size:16px}.collection-catalog{padding:20px 4% 38px}.collection-toolbar{align-items:stretch;flex-direction:column;gap:10px}.collection-count{text-align:center}.collection-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.collection-product-image{height:clamp(165px,48vw,270px)}.collection-product-info{padding:13px 8px 16px}.collection-product-info h2{font-size:19px}.collection-product-info>small{font-size:9px;letter-spacing:1px}.collection-filters{gap:6px}.collection-filters button{padding:8px 10px;font-size:10px}}
+@media(max-width:380px){.collection-grid{grid-template-columns:1fr}.collection-product-image{height:280px}}
