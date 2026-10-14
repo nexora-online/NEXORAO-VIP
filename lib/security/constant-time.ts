@@ -1,0 +1,1 @@
+export function safeTokenMatch(expected: string | undefined, supplied: string | null): boolean { if(!expected || !supplied) return false; if(expected.length!==supplied.length) return false; let diff=0; for(let i=0;i<expected.length;i++) diff |= expected.charCodeAt(i)^supplied.charCodeAt(i); return diff===0; }
