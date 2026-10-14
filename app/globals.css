@@ -155,3 +155,12 @@
 .checkout-payment label{display:flex;align-items:center;gap:8px;font-size:14px}
 .checkout-payment input{accent-color:#d9a94f}
 @media(max-width:520px){.checkout-fields{grid-template-columns:1fr}.checkout-review>div{font-size:12px}}
+
+
+/* Elegant empty supplier-catalog state; homepage composition remains unchanged */
+.empty-catalog{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:230px;margin:12px 0;padding:32px 20px;border:1px solid #9b7335;outline:1px solid #493416;outline-offset:-7px;background:radial-gradient(ellipse at center,#1a140b 0%,#080706 72%);text-align:center;color:#ead8b3}
+.empty-catalog-crown{font-size:30px;color:#e7bd65;text-shadow:0 0 16px #dba64b55}
+.empty-catalog h3{margin:0;color:#f3d48c;font-family:Georgia,serif;font-weight:400;font-size:22px}
+.empty-catalog p{max-width:600px;margin:0;color:#c7b99b;font-size:14px;line-height:1.8}
+.catalog-retry{border:1px solid #c49a4b;padding:10px 18px;background:#100c07;color:#f5d995;cursor:pointer;font:inherit;font-size:12px;letter-spacing:.4px}
+.catalog-retry:hover{background:#35240d}
