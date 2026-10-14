@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-const categories = [
+const storeLanguages = [\n  { code: "DE", flag: "🇩🇪", name: "Deutsch" },\n  { code: "EN", flag: "🇬🇧", name: "English" },\n  { code: "FR", flag: "🇫🇷", name: "Français" },\n  { code: "AR", flag: "🇸🇦", name: "العربية" },\n  { code: "RU", flag: "🇷🇺", name: "Русский" },\n  { code: "TR", flag: "🇹🇷", name: "Türkçe" },\n  { code: "ES", flag: "🇪🇸", name: "Español" },\n  { code: "IT", flag: "🇮🇹", name: "Italiano" },\n  { code: "ZH", flag: "🇨🇳", name: "中文" },\n  { code: "JA", flag: "🇯🇵", name: "日本語" },\n];\n\nconst categories = [
   { name: "DAMEN", subtitle: "Eleganz für jeden Moment", image: "photo-1483985988355-763728e1935b" },
   { name: "HERREN", subtitle: "Zeitloser Stil", image: "photo-1617137968427-85924c800a22" },
   { name: "SCHMUCK & UHREN", subtitle: "Kostbare Details", image: "photo-1523170335258-f5ed11844a49" },
@@ -22,7 +22,7 @@ const products: Product[] = [
 ];
 
 export default function Home() {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState("");\n  const [selectedLanguage, setSelectedLanguage] = useState("DE");\n  const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const [active, setActive] = useState("ALLE");
   const [cart, setCart] = useState<number[]>([]);
   const [favorites, setFavorites] = useState<number[]>([]);
@@ -54,7 +54,7 @@ export default function Home() {
   return <main>
     <div className="announcement">✦ EXCLUSIVE LIFESTYLE · VIP ONLY ✦ <span>Eine neue Welt der Eleganz</span></div>
     <header className="header">
-      <button className="language" aria-label="Sprache auswählen">🇩🇪 DE⌄</button>
+      <div className="language-picker"><button className="language" aria-label="Sprache auswählen" aria-expanded={languageMenuOpen} onClick={() => setLanguageMenuOpen(open => !open)}>{storeLanguages.find(language => language.code === selectedLanguage)?.flag} {selectedLanguage}⌄</button>{languageMenuOpen && <div className="language-menu" role="listbox" aria-label="Shop-Sprache auswählen">{storeLanguages.map(language => <button type="button" role="option" aria-selected={selectedLanguage === language.code} className={selectedLanguage === language.code ? "language-option selected" : "language-option"} key={language.code} onClick={() => { setSelectedLanguage(language.code); setLanguageMenuOpen(false); setNotice(`${language.flag} ${language.name} ausgewählt. Die vollständige Übersetzung der Shop-Inhalte wird separat eingerichtet.`); }}><span className="language-flag">{language.flag}</span><span className="language-name">{language.name}</span><span className="language-code">{language.code}</span></button>)}</div>}</div>
       <label className="search"><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Suche nach Luxus, Marken oder Kategorien..." /><span>⌕</span></label>
       <a className="brand" href="#" aria-label="NEXORA Startseite"><span className="crest">♛</span><span className="brand-name">NEXORA</span><small>EXCLUSIVE LIFESTYLE · VIP ONLY</small></a>
       <div className="actions"><button aria-label="Konto">♙</button><button aria-label="Favoriten anzeigen" onClick={() => { setActive("ALLE"); setSearch(""); setNotice(favorites.length ? `Sie haben ${favorites.length} Favorit(en) markiert.` : "Ihre Favoritenliste ist noch leer."); }}>{favorites.length ? "♥" : "♡"} <sup>{favorites.length}</sup></button><button aria-label="Warenkorb öffnen" onClick={() => setCartOpen(true)}>♧ <sup>{cart.length}</sup></button><button aria-label="Menü">☰</button></div>
