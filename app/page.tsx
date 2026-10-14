@@ -24,7 +24,7 @@ const categories = [
   { name: "LIFESTYLE", subtitle: "Ein Leben mit Stil", image: "photo-1600210492486-724fe5c67fb0" },
 ];
 
-type Product = { id: number; name: string; brand: string; category: string; price: number; image: string; tag: string; };
+type Product = { id: string; name: string; brand: string; category: string; price: number; image: string; tag: string; };
 type CatalogResponse = { products?: Array<{ id: string; name: string; brand: string; category: string; price: number; image: string; supplier: string; available: boolean }>; source?: string; message?: string };
 
 const products: Product[] = [];
@@ -35,8 +35,8 @@ export default function Home() {
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
   const [activeLegal, setActiveLegal] = useState<string | null>(null);
   const [active, setActive] = useState("ALLE");
-  const [cart, setCart] = useState<number[]>([]);
-  const [favorites, setFavorites] = useState<number[]>([]);
+  const [cart, setCart] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [notice, setNotice] = useState("");
@@ -51,7 +51,7 @@ export default function Home() {
       .then(response => response.json())
       .then((data: CatalogResponse) => {
         if (!alive) return;
-        const imported = (data.products ?? []).slice(0, 1000).map((p, index) => ({ id: 1001 + index, name: p.name, brand: p.brand || p.supplier, category: p.category || "LIFESTYLE", price: p.price, image: p.image, tag: "LIEFERANT" }));
+        const imported = (data.products ?? []).slice(0, 1000).map(p => ({ id: p.id, name: p.name, brand: p.brand || p.supplier, category: p.category || "LIFESTYLE", price: p.price, image: p.image, tag: "LIEFERANT" }));
         setSupplierProducts(imported);
         setCatalogMessage(data.source === "supplier-feed" ? `${imported.length} Lieferantenprodukte geladen` : data.message ?? "Lieferantenkatalog noch nicht verbunden");
       })
