@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     const supplierUrl = process.env.SUPPLIER_ORDER_FULFILLMENT_URL;
     const supplierToken = process.env.SUPPLIER_ORDER_FULFILLMENT_TOKEN;
     const stripeSecret = process.env.STRIPE_SECRET_KEY;
-    if (supplierUrl && supplierToken && stripeSecret && typeof session.id === "string") {
+    if (process.env.COMMERCE_RELEASE_APPROVED === "true" && supplierUrl && supplierToken && stripeSecret && typeof session.id === "string") {
       let endpoint: URL;
       try { endpoint = new URL(supplierUrl); if (endpoint.protocol !== "https:") throw new Error(); }
       catch { return NextResponse.json({ error: "Supplier fulfillment endpoint must use HTTPS." }, { status: 500 }); }
@@ -47,6 +47,10 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "Payment verified but Stripe line items are temporarily unavailable; manual fulfillment required." }, { status: 502 });
       }
       const productIds = String((session.metadata as { product_ids?: string } | undefined)?.product_ids || "").split(",").filter(Boolean);
+      const shipping = session.shipping_details as { address?: { line1?: string | null; city?: string | null; postal_code?: string | null; country?: string | null }; name?: string | null } | null;
+      if (!shipping?.address?.line1 || !shipping.address.city || !shipping.address.postal_code || !shipping.address.country || !shipping.name) {
+        return NextResponse.json({ error: "Payment verified but complete shipping details are missing; manual fulfillment required." }, { status: 502 });
+      }
       const lines = Array.isArray(lineItems?.data) ? lineItems.data : [];
       if (!lines.length || lines.length !== productIds.length || lines.some(line => !Number.isInteger(line.quantity) || (line.quantity || 0) < 1 || (line.amount_total || 0) < 0 || line.currency?.toLowerCase() !== "eur")) {
         return NextResponse.json({ error: "Payment verified but order lines failed validation; manual fulfillment required." }, { status: 502 });
