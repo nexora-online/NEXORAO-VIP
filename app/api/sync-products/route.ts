@@ -38,7 +38,7 @@ const safeHttps = (value: unknown): string => {
   try { const url = new URL(raw); return url.protocol === "https:" ? url.toString() : ""; } catch { return ""; }
 };
 const amount = (value: unknown): number | null => {
-  const parsed = Number(text(value).replace(/[^0-9.,-]/g, "").replace(",", "."));
+  const raw = text(value).replace(/[^0-9.,-]/g, "");\n  const normalized = raw.includes(",") && raw.includes(".") ? (raw.lastIndexOf(",") > raw.lastIndexOf(".") ? raw.replace(/\\./g, "").replace(",", ".") : raw.replace(/,/g, "")) : raw.replace(",", ".");\n  const parsed = Number(normalized);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 };
 function classifyProduct(value: Record<string, unknown>, fallback: StoreCategory): StoreProduct | null {
