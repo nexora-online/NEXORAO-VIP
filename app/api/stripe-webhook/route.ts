@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+type StripeLineItems = { data?: Array<{ description?: string | null; quantity?: number | null; amount_total?: number | null; currency?: string | null; price?: { product?: string | { id?: string } | null } | null }> };
+
 function verifyStripeSignature(raw: string, header: string, secret: string): boolean {
   const parts = header.split(",").map(part => part.trim().split("="));
   const timestamp = parts.find(([key]) => key === "t")?.[1];
@@ -36,13 +38,13 @@ export async function POST(request: Request) {
       let endpoint: URL;
       try { endpoint = new URL(supplierUrl); if (endpoint.protocol !== "https:") throw new Error(); }
       catch { return NextResponse.json({ error: "Supplier fulfillment endpoint must use HTTPS." }, { status: 500 }); }
-      let lineItems: { data?: Array<{ description?: string | null; quantity?: number | null; amount_total?: number | null; currency?: string | null; price?: { product?: string | { id?: string } | null } | null }> } | null = null;
+      let lineItems: StripeLineItems | null = null;
       try {
         const itemsResponse = await fetch("https://api.stripe.com/v1/checkout/sessions/" + encodeURIComponent(session.id) + "/line_items?limit=100", {
           headers: { Authorization: "Bearer " + stripeSecret, Accept: "application/json" }, cache: "no-store", signal: AbortSignal.timeout(12000),
         });
         if (!itemsResponse.ok) return NextResponse.json({ error: "Payment verified but Stripe line items could not be retrieved; manual fulfillment required." }, { status: 502 });
-        lineItems = await itemsResponse.json() as typeof lineItems;
+        lineItems = await itemsResponse.json() as StripeLineItems;
       } catch {
         return NextResponse.json({ error: "Payment verified but Stripe line items are temporarily unavailable; manual fulfillment required." }, { status: 502 });
       }
