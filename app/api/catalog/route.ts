@@ -34,6 +34,7 @@ async function loadCJProducts(limit: number): Promise<Product[]> {
  const endpoint = new URL("https://developers.cjdropshipping.com/api2.0/v1/product/listV2");
  endpoint.searchParams.set("page", "1");
  endpoint.searchParams.set("size", String(Math.min(100, limit)));
+ endpoint.searchParams.set("features", "enable_category");
  const response = await fetch(endpoint.toString(), { headers: { "CJ-Access-Token": token, Accept: "application/json" }, cache: "no-store", signal: AbortSignal.timeout(15000) });
  if (!response.ok) throw new Error("CJ product request failed");
  const payload: unknown = await response.json();
@@ -53,7 +54,7 @@ async function loadCJProducts(limit: number): Promise<Product[]> {
   const imageUrl = typeof p.bigImage === "string" ? p.bigImage : "";
   const price = Number(p.nowPrice ?? p.sellPrice);
   let secureImage = false; try { secureImage = new URL(imageUrl).protocol === "https:"; } catch {}
-  if (!id || !name || !Number.isFinite(price) || price < 0 || !secureImage || p.saleStatus === "0" || p.saleStatus === 0) return null;
+  if (!id || !name || !Number.isFinite(price) || price < 0 || !secureImage || (p.saleStatus !== "3" && p.saleStatus !== 3)) return null;
   return { id, name, brand: typeof p.brand === "string" ? p.brand : "CJdropshipping", category: typeof p.threeCategoryName === "string" ? p.threeCategoryName : typeof p.categoryName === "string" ? p.categoryName : "LIFESTYLE", price, currency: "USD", imageUrl, available: true };
  }).filter((p): p is Product => p !== null).slice(0, limit);
 }
