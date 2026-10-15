@@ -11,7 +11,7 @@ type StoreCategory = "DAMEN" | "HERREN" | "SCHMUCK & UHREN" | "BEAUTY" | "ACCESS
 type StoreProduct = {
   id: string; sku?: string; name: string; brand: string; category: StoreCategory;
   price: number; originalPrice?: number; discountPercent?: number; currency: "EUR";
-  imageUrl: string; productUrl: string; luxuryTag: "curated" | "simulated";
+  imageUrl: string; productUrl: string; luxuryTag: "unverified" | "simulated";
   available: boolean | null; inventoryStatus: "available-unknown-quantity" | "unknown";
   supplier: "AliExpress" | "Simulation";
 };
@@ -71,7 +71,7 @@ function classifyProduct(value: Record<string, unknown>, fallback: StoreCategory
     id, ...(text(value.sku ?? value.sku_id ?? value.skuId) ? { sku: text(value.sku ?? value.sku_id ?? value.skuId) } : {}),
     name, brand: text(value.shop_name ?? value.shopName ?? value.brand) || "AliExpress", category, price,
     ...(originalPrice !== null && originalPrice > price ? { originalPrice, discountPercent: Math.round((1 - price / originalPrice) * 100) } : {}),
-    currency: "EUR", imageUrl, productUrl, luxuryTag: "curated",
+    currency: "EUR", imageUrl, productUrl, luxuryTag: "unverified" as const,
     available: null, inventoryStatus: "unknown", supplier: "AliExpress",
   };
 }
@@ -133,7 +133,7 @@ function simulationCatalog(): StoreProduct[] {
   return items.map(([id, name, category, price, photo]) => ({
     id, name, category, price, currency: "EUR", brand: "Demo catalog",
     imageUrl: "https://images.unsplash.com/" + photo + "?auto=format&fit=crop&w=900&q=80",
-    productUrl: "", luxuryTag: "simulated", available: null, inventoryStatus: "unknown", supplier: "Simulation",
+    productUrl: "", luxuryTag: "simulated" as const, available: null, inventoryStatus: "unknown" as const, supplier: "Simulation" as const,
   }));
 }
 async function readPersistedCatalog(): Promise<CatalogBody | null> {
