@@ -155,7 +155,7 @@ async function persistCatalog(body: CatalogBody): Promise<boolean> {
   if (!process.env.BLOB_READ_WRITE_TOKEN) return false;
   try {
     await put(BLOB_PATH, JSON.stringify({ ...body, savedAt: new Date().toISOString() }), {
-      access: "public", addRandomSuffix: false, allowOverwrite: true, contentType: "application/json",
+      access: "public", addRandomSuffix: false, contentType: "application/json",
     });
     return true;
   } catch { return false; }
