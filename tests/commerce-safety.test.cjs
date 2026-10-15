@@ -9,6 +9,7 @@ const checkout = read("app/api/stripe-checkout/route.ts");
 const webhook = read("app/api/stripe-webhook/route.ts");
 const simulation = read("app/api/commerce-simulation/route.ts");
 const catalog = read("app/api/sync-products/route.ts");
+const packageJson = JSON.parse(read("package.json"));
 
 test("live checkout stays disabled unless both release gates are explicitly enabled", () => {
   assert.match(checkout, /CHECKOUT_ENABLED !== "true"/);
@@ -55,8 +56,25 @@ test("simulation checks reject unknown stock and tampered or stale signatures", 
   assert.match(simulation, /Live checkout remains locked/);
 });
 
-test("supplier catalog never invents inventory availability", () => {
+test("catalog validates live EUR products and never fabricates SKU-level inventory", () => {
+  assert.match(catalog, /rawCurrency !== "EUR"/);
+  assert.match(catalog, /!productUrl/);
   assert.match(catalog, /available: null/);
   assert.match(catalog, /inventoryStatus: "unknown"/);
-  assert.match(catalog, /Do not fabricate either/);
+  assert.match(catalog, /luxuryTag: "curated"/);
+});
+
+test("catalog has explicit simulation fallback and durable Blob persistence", () => {
+  assert.match(catalog, /simulationCatalog\(\)/);
+  assert.match(catalog, /SIMULATION ONLY/);
+  assert.match(catalog, /await put\(BLOB_PATH/);
+  assert.match(catalog, /await list\(\{ prefix: BLOB_PATH/);
+  assert.match(catalog, /BLOB_READ_WRITE_TOKEN/);
+  assert.equal(packageJson.dependencies["@vercel/blob"] !== undefined, true);
+});
+
+test("catalog limits stored items and labels inventory as unverified", () => {
+  assert.match(catalog, /slice\(0, 1000\)/);
+  assert.match(catalog, /Stock is unknown until a stock-capable supplier API verifies it/);
+  assert.match(catalog, /Catalog fetched but not durably saved/);
 });
