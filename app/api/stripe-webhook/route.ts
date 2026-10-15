@@ -31,10 +31,26 @@ export async function POST(request: Request) {
     if (session.payment_status !== "paid") return NextResponse.json({ received: true, fulfillment: "pending_payment_confirmation" });
     const supplierUrl = process.env.SUPPLIER_ORDER_FULFILLMENT_URL;
     const supplierToken = process.env.SUPPLIER_ORDER_FULFILLMENT_TOKEN;
-    if (supplierUrl && supplierToken) {
+    const stripeSecret = process.env.STRIPE_SECRET_KEY;
+    if (supplierUrl && supplierToken && stripeSecret && typeof session.id === "string") {
       let endpoint: URL;
       try { endpoint = new URL(supplierUrl); if (endpoint.protocol !== "https:") throw new Error(); }
       catch { return NextResponse.json({ error: "Supplier fulfillment endpoint must use HTTPS." }, { status: 500 }); }
+      let lineItems: { data?: Array<{ description?: string | null; quantity?: number | null; amount_total?: number | null; currency?: string | null; price?: { product?: string | { id?: string } | null } | null }> } | null = null;
+      try {
+        const itemsResponse = await fetch("https://api.stripe.com/v1/checkout/sessions/" + encodeURIComponent(session.id) + "/line_items?limit=100", {
+          headers: { Authorization: "Bearer " + stripeSecret, Accept: "application/json" }, cache: "no-store", signal: AbortSignal.timeout(12000),
+        });
+        if (!itemsResponse.ok) return NextResponse.json({ error: "Payment verified but Stripe line items could not be retrieved; manual fulfillment required." }, { status: 502 });
+        lineItems = await itemsResponse.json() as typeof lineItems;
+      } catch {
+        return NextResponse.json({ error: "Payment verified but Stripe line items are temporarily unavailable; manual fulfillment required." }, { status: 502 });
+      }
+      const productIds = String((session.metadata as { product_ids?: string } | undefined)?.product_ids || "").split(",").filter(Boolean);
+      const lines = Array.isArray(lineItems?.data) ? lineItems.data : [];
+      if (!lines.length || lines.length !== productIds.length || lines.some(line => !Number.isInteger(line.quantity) || (line.quantity || 0) < 1 || (line.amount_total || 0) < 0 || line.currency?.toLowerCase() !== "eur")) {
+        return NextResponse.json({ error: "Payment verified but order lines failed validation; manual fulfillment required." }, { status: 502 });
+      }
       const payload = {
         source: "stripe",
         stripeEventId: event.id,
@@ -45,11 +61,18 @@ export async function POST(request: Request) {
         customerEmail: (session.customer_details as { email?: string } | undefined)?.email,
         customerName: (session.customer_details as { name?: string } | undefined)?.name,
         shippingDetails: session.shipping_details,
-        productIds: String((session.metadata as { product_ids?: string } | undefined)?.product_ids || "").split(",").filter(Boolean),
-        note: "Supplier adapter must validate product IDs and shipping data before placing supplier orders.",
+        items: lines.map((line, index) => ({
+          supplierProductId: productIds[index],
+          quantity: line.quantity,
+          description: line.description,
+          lineAmountMinor: line.amount_total,
+          currency: line.currency,
+        })),
+        idempotencyKey: String(event.id || session.id),
+        note: "The supplier adapter must independently validate product IDs, SKU/variant, price, inventory, shipping address and idempotency before placing orders.",
       };
       try {
-        const result = await fetch(endpoint.toString(), { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + supplierToken, "Idempotency-Key": String(event.id || session.id || "nexora-order") }, body: JSON.stringify(payload), cache: "no-store", signal: AbortSignal.timeout(15000) });
+        const result = await fetch(endpoint.toString(), { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + supplierToken, "Idempotency-Key": String(event.id || session.id || "nexora-order") }, body: JSON.stringify(payload), cache: "no-store", signal: AbortSignal.timeout(20000) });
         if (!result.ok) return NextResponse.json({ error: "Payment verified; supplier fulfillment adapter rejected the order. Manual fulfillment required." }, { status: 502 });
         return NextResponse.json({ received: true, fulfillment: "submitted_to_configured_supplier_adapter" });
       } catch {
