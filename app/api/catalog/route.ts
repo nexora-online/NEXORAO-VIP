@@ -9,7 +9,7 @@ function validProduct(value: unknown): value is Product {
  let safe = false; try { safe = new URL(img).protocol === "https:"; } catch {}
  return typeof p.id === "string" && !!p.id && typeof p.name === "string" && !!p.name && typeof p.price === "number" && Number.isFinite(p.price) && p.price >= 0 && safe && (p.available === undefined || typeof p.available === "boolean");
 }
-type CJProduct = { id?: unknown; nameEn?: unknown; sku?: unknown; spu?: unknown; bigImage?: unknown; sellPrice?: unknown; nowPrice?: unknown; saleStatus?: unknown; threeCategoryName?: unknown; categoryName?: unknown; brand?: unknown };
+type CJProduct = { id?: unknown; productId?: unknown; nameEn?: unknown; sku?: unknown; spu?: unknown; bigImage?: unknown; sellPrice?: unknown; nowPrice?: unknown; saleStatus?: unknown; threeCategoryName?: unknown; categoryName?: unknown; brand?: unknown };
 let cachedCJToken: { value: string; expiresAt: number } | null = null;
 async function getCJAccessToken(apiKey: string): Promise<string> {
  if (cachedCJToken && cachedCJToken.expiresAt > Date.now() + 60_000) return cachedCJToken.value;
@@ -31,25 +31,32 @@ async function loadCJProducts(limit: number): Promise<Product[]> {
  const apiKey = process.env.CJ_API_KEY;
  if (!apiKey) throw new Error("CJ_API_KEY is missing");
  const token = await getCJAccessToken(apiKey);
- const endpoint = new URL("https://developers.cjdropshipping.com/api2.0/v1/product/listV2");
- endpoint.searchParams.set("page", "1");
- endpoint.searchParams.set("size", String(Math.min(100, limit)));
- endpoint.searchParams.set("features", "enable_category");
- const response = await fetch(endpoint.toString(), { headers: { "CJ-Access-Token": token, Accept: "application/json" }, cache: "no-store", signal: AbortSignal.timeout(15000) });
- if (!response.ok) throw new Error("CJ product request failed");
- const payload: unknown = await response.json();
- if (!payload || typeof payload !== "object") throw new Error("CJ product response invalid");
- const root = payload as { code?: unknown; success?: unknown; result?: unknown; data?: { content?: unknown } };
- if (root.success === false || root.result === false || (typeof root.code === "number" && root.code !== 200)) throw new Error("CJ product request failed");
- const groups = Array.isArray(root.data?.content) ? root.data.content : [];
  const rows: CJProduct[] = [];
- for (const group of groups) {
-  if (!group || typeof group !== "object") continue;
-  const productList = (group as { productList?: unknown }).productList;
-  if (Array.isArray(productList)) rows.push(...productList as CJProduct[]);
+ const pageSize = 100;
+ const maxPages = Math.ceil(limit / pageSize);
+ for (let page = 1; page <= maxPages && rows.length < limit; page++) {
+  const endpoint = new URL("https://developers.cjdropshipping.com/api2.0/v1/product/listV2");
+  endpoint.searchParams.set("page", String(page));
+  endpoint.searchParams.set("size", String(pageSize));
+  endpoint.searchParams.set("features", "enable_category");
+  const response = await fetch(endpoint.toString(), { headers: { "CJ-Access-Token": token, Accept: "application/json" }, cache: "no-store", signal: AbortSignal.timeout(15000) });
+  if (!response.ok) throw new Error("CJ product request failed");
+  const payload: unknown = await response.json();
+  if (!payload || typeof payload !== "object") throw new Error("CJ product response invalid");
+  const root = payload as { code?: unknown; success?: unknown; result?: unknown; data?: { content?: unknown } };
+  if (root.success === false || root.result === false || (typeof root.code === "number" && root.code !== 200)) throw new Error("CJ product request failed");
+  const groups = Array.isArray(root.data?.content) ? root.data.content : [];
+  const pageRows: CJProduct[] = [];
+  for (const group of groups) {
+   if (!group || typeof group !== "object") continue;
+   const productList = (group as { productList?: unknown }).productList;
+   if (Array.isArray(productList)) pageRows.push(...productList as CJProduct[]);
+  }
+  rows.push(...pageRows);
+  if (pageRows.length < pageSize) break;
  }
  return rows.map((p): Product | null => {
-  const id = typeof p.id === "string" ? p.id : typeof p.sku === "string" ? p.sku : typeof p.spu === "string" ? p.spu : "";
+  const id = typeof p.id === "string" ? p.id : typeof p.productId === "string" ? p.productId : typeof p.sku === "string" ? p.sku : typeof p.spu === "string" ? p.spu : "";
   const name = typeof p.nameEn === "string" ? p.nameEn.trim() : "";
   const imageUrl = typeof p.bigImage === "string" ? p.bigImage : "";
   const price = Number(p.nowPrice ?? p.sellPrice);
