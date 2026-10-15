@@ -140,7 +140,11 @@ async function searchGroup(group: SearchGroup, appKey: string, appSecret: string
   return [...unique.values()];
 }
 
-export async function POST(request: Request) {\n  return GET(request);\n}\n\nexport async function GET(request: Request) {
+export async function POST(request: Request) {
+  return GET(request);
+}
+
+export async function GET(request: Request) {
   const appKey = process.env.ALIEXPRESS_APP_KEY;
   const appSecret = process.env.ALIEXPRESS_APP_SECRET;
   if (!appKey || !appSecret) {
