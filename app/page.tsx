@@ -27,7 +27,7 @@ const categories=[
 {title:"ACCESSOIRES",sub:"Der letzte Schliff",category:"ACCESSOIRES",image:"https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=1000&q=85"},
 {title:"LIFESTYLE",sub:"Leben mit Anspruch",category:"LIFESTYLE",image:"https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1000&q=85"}];
 export default function Home(){
-const[lang,setLang]=useState<Lang>("DE"),[products,setProducts]=useState<Product[]>(FALLBACK_PRODUCTS),[query,setQuery]=useState(""),[category,setCategory]=useState("ALL"),[loading,setLoading]=useState(true),[menu,setMenu]=useState(false),[panel,setPanel]=useState<"cart"|"wishlist"|"account"|"legal"|null>(null),[cart,setCart]=useState<string[]>([]),[wish,setWish]=useState<string[]>([]),[searchOpen,setSearchOpen]=useState(false);
+const[lang,setLang]=useState<Lang>("DE"),[products,setProducts]=useState<Product[]>(FALLBACK_PRODUCTS),[query,setQuery]=useState(""),[category,setCategory]=useState("ALL"),[loading,setLoading]=useState(false),[menu,setMenu]=useState(false),[panel,setPanel]=useState<"cart"|"wishlist"|"account"|"legal"|null>(null),[cart,setCart]=useState<string[]>([]),[wish,setWish]=useState<string[]>([]),[searchOpen,setSearchOpen]=useState(false);
 const t={...words.DE,...(words[lang]||words.EN)},rtl=lang==="AR";
 const categoryTitle=(key:string)=>key==="DAMEN"?t.women:key==="HERREN"?t.men:key==="SCHMUCK & UHREN"?t.jewelry:key==="BEAUTY"?t.beauty:key==="ACCESSOIRES"?t.accessories:key==="LIFESTYLE"?t.lifestyle:key;
 const categorySub=(key:string)=>key==="DAMEN"?t.subWomen:key==="HERREN"?t.subMen:key==="SCHMUCK & UHREN"?t.subJewelry:key==="BEAUTY"?t.subBeauty:key==="ACCESSOIRES"?t.subAccessories:key==="LIFESTYLE"?t.subLifestyle:key;
