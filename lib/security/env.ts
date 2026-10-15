@@ -1,1 +1,0 @@
-export function missingServerEnvironment(names:string[]):string[]{return names.filter(name=>!process.env[name]?.trim());} export function assertServerEnvironment(names:string[]):void{const missing=missingServerEnvironment(names);if(missing.length)throw new Error("Missing server environment: "+missing.join(", "));}

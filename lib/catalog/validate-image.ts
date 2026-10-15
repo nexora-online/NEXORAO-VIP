@@ -1,1 +1,0 @@
-export function isSafeProductImage(value:string):boolean{try{const u=new URL(value);return u.protocol==="https:";}catch{return false;}}

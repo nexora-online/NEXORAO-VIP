@@ -1,2 +1,0 @@
-import type { NormalizedSupplierProduct } from "@/lib/suppliers/types";
-export function filterCatalog(products:NormalizedSupplierProduct[],query:string,category:string){const q=query.trim().toLocaleLowerCase("de-DE");return products.filter(p=>(category==="ALLE"||p.category===category)&&(!q||[p.name,p.brand,p.category,p.sku??""].some(v=>v.toLocaleLowerCase("de-DE").includes(q))));}
