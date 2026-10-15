@@ -32,6 +32,9 @@ const SEARCH_GROUPS: SearchGroup[] = [
   { category: "LIFESTYLE", keywords: "home lifestyle decor" },
 ];
 
+// Best-effort warm-instance cache to reduce supplier API calls. Durable catalog storage requires a database.
+let cachedCatalog: { key: string; expiresAt: number; body: unknown } | null = null;
+
 const text = (value: unknown): string => typeof value === "string" || typeof value === "number" ? String(value).trim() : "";
 const safeHttps = (value: unknown): string => {
   const raw = text(value);
@@ -157,6 +160,10 @@ export async function GET(request: Request) {
   const country = (requestUrl.searchParams.get("country") || "DE").toUpperCase().slice(0, 2);
   const currency = (requestUrl.searchParams.get("currency") || "EUR").toUpperCase().slice(0, 3);
   const language = (requestUrl.searchParams.get("language") || "DE").toUpperCase().slice(0, 2);
+  const cacheKey = [appKey, country, currency, language].join(":");
+  if (cachedCatalog && cachedCatalog.key === cacheKey && cachedCatalog.expiresAt > Date.now()) {
+    return NextResponse.json(cachedCatalog.body, { headers: { "Cache-Control": "no-store" } });
+  }
   try {
     const results = await Promise.allSettled(SEARCH_GROUPS.map(group => searchGroup(group, appKey, appSecret, country, currency, language)));
     const products = new Map<string, StoreProduct>();
@@ -173,12 +180,14 @@ export async function GET(request: Request) {
         failedCategories: errors,
       }, { status: 502, headers: { "Cache-Control": "no-store" } });
     }
-    return NextResponse.json({
-      products: all, count: all.length, limit: 1500, configured: true, supplier: "AliExpress",
+    const body = {
+      products: all, count: all.length, limit: 1500, configured: true, supplier: "AliExpress" as const,
       categories: Object.fromEntries(SEARCH_GROUPS.map(group => [group.category, all.filter(product => product.category === group.category).length])),
       inventoryNote: "The affiliate product-query API does not reliably expose live SKU-level stock. Inventory is intentionally marked unknown until a stock-capable, authorized API is configured.",
       partial: errors.length > 0, failedCategories: errors,
-    }, { headers: { "Cache-Control": "no-store, max-age=0" } });
+    };
+    cachedCatalog = { key: cacheKey, expiresAt: Date.now() + 10 * 60 * 1000, body };
+    return NextResponse.json(body, { headers: { "Cache-Control": "no-store, max-age=0" } });
   } catch {
     return NextResponse.json({
       products: [], count: 0, configured: true, supplier: "AliExpress",
