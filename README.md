@@ -12,7 +12,7 @@ Configure one of the supported server-side supplier connections in Vercel:
 - `SUPPLIER_CATALOG_URL`: HTTPS URL of a supplier's JSON product feed, used when `CJ_API_KEY` is not configured.
 - `SUPPLIER_CATALOG_TOKEN`: optional bearer token for that generic feed.
 - `NEXT_PUBLIC_SITE_URL`: optional canonical site URL for the hourly catalog check.
-- `CRON_SECRET`: optional secret to protect the catalog cron endpoint.
+- `CRON_SECRET`: required long random secret for the scheduled catalog check; without it, `/api/cron/catalog` returns HTTP 503.
 
 The generic feed must return a JSON array or an object with a `products` array. Each product needs a stable `id`, `name`, numeric `price`, and HTTPS image URL (`imageUrl` or `image`). Optional fields include `brand`, `category`, `currency`, and `available`. Products marked unavailable are not displayed. The endpoint validates product data and caps the response at 1,500 items. The CJ adapter requires a valid CJ API key and API access; a successful GitHub build alone does not verify supplier credentials or guarantee that products will load.
 
@@ -22,7 +22,7 @@ The storefront now includes a browser-persisted cart, product detail and collect
 
 ## AliExpress Open Platform product sync
 
-The storefront reads its supplier catalog from `/api/sync-products?country=DE&currency=EUR&language=DE`. The route queries up to four pages per category using popularity sorting, deduplicates listings, caps the response at 1,000 items, and maps products into the six storefront categories. Product-card discounts are shown only when the supplier response includes a higher original price. Product images use `object-fit: contain` to avoid cropping. Affiliate product data does not guarantee seller inventory or variant-level SKU availability; unknown inventory is explicitly marked unknown rather than fabricated.
+The storefront reads its supplier catalog from `/api/sync-products?country=DE&currency=EUR&language=DE`. The route queries up to four pages per category using popularity sorting, deduplicates listings, caps the response at 1,000 items, and maps products into the six storefront categories. Product-card discounts are shown only when the supplier response includes a higher original price. Product images use `object-fit: contain` to avoid cropping. Affiliate product data does not guarantee seller inventory or variant-level SKU availability; unknown inventory is explicitly marked unknown rather than fabricated. Add-to-cart and checkout are blocked unless the supplier explicitly confirms availability. The current affiliate product query does not provide the stock guarantee needed to enable purchasing.
 
 Set these variables in the Vercel project environment (Production and Preview as needed):
 
