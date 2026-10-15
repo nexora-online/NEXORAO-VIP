@@ -109,44 +109,48 @@ function signRequest(params: Record<string, string>, secret: string): string {
   return createHmac("sha256", secret).update(payload, "utf8").digest("hex").toUpperCase();
 }
 async function searchGroup(group: SearchGroup, appKey: string, appSecret: string, country: string, currency: string, language: string): Promise<StoreProduct[]> {
-  const params: Record<string, string> = {
-    app_key: appKey,
-    method: "aliexpress.affiliate.product.query",
-    timestamp: new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().replace("T", " ").replace(/\.\d{3}Z$/, ""),
-    sign_method: "sha256",
-    format: "json",
-    v: "2.0",
-    keywords: group.keywords,
-    page_no: "1",
-    page_size: "50",
-    target_currency: currency,
-    target_language: language,
-    ship_to_country: country,
-    sort: "SALE_PRICE_ASC",
-    fields: "product_id,product_title,product_main_image_url,target_sale_price,target_sale_price_currency,target_original_price,product_detail_url,first_level_category_name,second_level_category_name,shop_name,product_small_image_urls,product_video_url,evaluate_rate,lastest_volume",
-  };
-  params.sign = signRequest(params, appSecret);
-  const response = await fetch("https://api-sg.aliexpress.com/sync", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8", Accept: "application/json" },
-    body: new URLSearchParams(params).toString(),
-    cache: "no-store",
-    signal: AbortSignal.timeout(18000),
-  });
-  if (!response.ok) throw new Error("AliExpress API returned HTTP " + response.status);
-  const data: unknown = await response.json();
-  if (!data || typeof data !== "object") throw new Error("AliExpress returned an invalid response");
-  const root = data as Record<string, unknown>;
-  if (root.error_response || root.error || root.code && Number(root.code) >= 400) throw new Error("AliExpress rejected the product query");
-  const candidates = collectProductObjects(data);
   const unique = new Map<string, StoreProduct>();
-  for (const candidate of candidates) {
-    const product = classifyProduct(candidate, group.category);
-    if (product && !unique.has(product.id)) unique.set(product.id, product);
+  // Import up to four pages per category (200 source listings per category before deduplication).
+  // The total catalog is capped at 1,000 products; server-side calls remain bounded.
+  for (let page = 1; page <= 4; page++) {
+    const params: Record<string, string> = {
+      app_key: appKey,
+      method: "aliexpress.affiliate.product.query",
+      timestamp: String(Date.now()),
+      sign_method: "sha256",
+      format: "json",
+      v: "2.0",
+      keywords: group.keywords,
+      page_no: String(page),
+      page_size: "50",
+      target_currency: currency,
+      target_language: language,
+      ship_to_country: country,
+      sort: "LAST_VOLUME_DESC",
+      fields: "product_id,product_title,product_main_image_url,target_sale_price,target_sale_price_currency,target_original_price,product_detail_url,first_level_category_name,second_level_category_name,shop_name,product_small_image_urls,product_video_url,evaluate_rate,lastest_volume",
+    };
+    params.sign = signRequest(params, appSecret);
+    const response = await fetch("https://api-sg.aliexpress.com/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8", Accept: "application/json" },
+      body: new URLSearchParams(params).toString(),
+      cache: "no-store",
+      signal: AbortSignal.timeout(18000),
+    });
+    if (!response.ok) throw new Error("AliExpress API returned HTTP " + response.status);
+    const data: unknown = await response.json();
+    if (!data || typeof data !== "object") throw new Error("AliExpress returned an invalid response");
+    const root = data as Record<string, unknown>;
+    if (root.error_response || root.error || (root.code != null && Number(root.code) >= 400)) throw new Error("AliExpress rejected the product query");
+    const candidates = collectProductObjects(data);
+    for (const candidate of candidates) {
+      const product = classifyProduct(candidate, group.category);
+      if (product && !unique.has(product.id)) unique.set(product.id, product);
+    }
+    if (candidates.length < 50) break;
   }
   return [...unique.values()];
 }
-
 export async function POST(request: Request) {
   return GET(request);
 }
@@ -176,7 +180,7 @@ export async function GET(request: Request) {
       if (result.status === "fulfilled") result.value.forEach(product => { if (!products.has(product.id)) products.set(product.id, product); });
       else errors.push(SEARCH_GROUPS[index].category);
     });
-    const all = [...products.values()].slice(0, 1500);
+    const all = [...products.values()].slice(0, 1000);
     if (all.length === 0) {
       return NextResponse.json({
         products: [], count: 0, configured: true, supplier: "AliExpress",
@@ -185,7 +189,7 @@ export async function GET(request: Request) {
       }, { status: 502, headers: { "Cache-Control": "no-store" } });
     }
     const body = {
-      products: all, count: all.length, limit: 1500, configured: true, supplier: "AliExpress" as const,
+      products: all, count: all.length, limit: 1000, configured: true, supplier: "AliExpress" as const,
       categories: Object.fromEntries(SEARCH_GROUPS.map(group => [group.category, all.filter(product => product.category === group.category).length])),
       inventoryNote: "The affiliate product-query API does not reliably expose live SKU-level stock. Inventory is intentionally marked unknown until a stock-capable, authorized API is configured.",
       partial: errors.length > 0, failedCategories: errors,
