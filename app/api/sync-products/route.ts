@@ -131,7 +131,7 @@ function simulationCatalog(): StoreProduct[] {
     ["demo-men-shirt", "Demo — Men's tailored shirt", "HERREN", 45, "photo-1603252109303-2751441dd157"],
   ];
   return items.map(([id, name, category, price, photo]) => ({
-    id, name, category, price, currency: "EUR", brand: "Demo catalog",
+    id, name, category, price, currency: "EUR" as const, brand: "Demo catalog",
     imageUrl: "https://images.unsplash.com/" + photo + "?auto=format&fit=crop&w=900&q=80",
     productUrl: "", luxuryTag: "simulated" as const, available: null, inventoryStatus: "unknown" as const, supplier: "Simulation" as const,
   }));
