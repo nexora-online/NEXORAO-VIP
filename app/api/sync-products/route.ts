@@ -71,8 +71,8 @@ function classifyProduct(value: Record<string, unknown>, fallback: StoreCategory
   else if (/beauty|makeup|cosmetic|skin.?care|serum|lipstick|mascara/.test(searchable)) category = "BEAUTY";
   else if (/handbag|bag|wallet|sunglass|belt|accessor/.test(searchable)) category = "ACCESSOIRES";
   else if (/home|kitchen|decor|lamp|lifestyle|furniture/.test(searchable)) category = "LIFESTYLE";
-  else if (/men|male|herr|man clothing/.test(searchable)) category = "HERREN";
-  else if (/women|female|dress|ladies|damen/.test(searchable)) category = "DAMEN";
+  else if (/\\bmen\\b|\\bmale\\b|\\bherr(en)?\\b|\\bmens\\b|\\bman\\b/.test(searchable)) category = "HERREN";
+  else if (/\\bwomen\\b|\\bfemale\\b|\\bwomens\\b|\\bdress\\b|\\bladies\\b|\\bdamen\\b/.test(searchable)) category = "DAMEN";
 
   // Affiliate discovery APIs do not reliably expose variant SKUs or live warehouse stock.
   // Do not fabricate either: preserve product ID as the stable catalog key and mark inventory unknown.
