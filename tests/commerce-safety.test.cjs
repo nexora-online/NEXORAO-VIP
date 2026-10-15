@@ -128,7 +128,7 @@ test("fallback preview products are clearly simulated and never treated as in-st
 
 test("preview product detail pages can resolve built-in products without supplier access", () => {
   const detail = read("app/products/[id]/page.tsx");
-  assert.match(detail, /import \\{ FALLBACK_PRODUCTS \\} from "\\.\\.\\/\\.\\.\\/\\.\\.\\/lib\\/fallback-catalog"/);
+  assert.ok(detail.includes('import { FALLBACK_PRODUCTS } from "../../../lib/fallback-catalog"'));
   assert.match(detail, /FALLBACK_PRODUCTS\.find/);
   assert.match(detail, /setProduct\(fallback\)/);
   assert.match(detail, /onError=\{event=>\{event\.currentTarget\.onerror=null/);
