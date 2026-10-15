@@ -30,3 +30,22 @@ Set these variables in the Vercel project environment (Production and Preview as
 - `ALIEXPRESS_APP_SECRET`: the secret from the AliExpress Open Platform app console. Keep it server-side; never use a `NEXT_PUBLIC_` prefix or commit the value.
 
 The app must be approved for `aliexpress.affiliate.product.query` access. A successful code build does not verify API permissions or credentials. Vercel environment-variable access was not available to this update, so these values must be verified in the project settings before live product synchronization can succeed.
+
+## Commerce routes and release gates
+
+- `/products/[id]`: product detail page; prices and availability are reloaded from the server catalog.
+- `/collections/[slug]`: dedicated collection showcase for `damen`, `herren`, `schmuck-uhren`, `beauty`, `accessoires`, and `lifestyle`.
+- `/cart` and `/checkout`: persistent browser cart and Stripe handoff. The checkout API re-reads the catalog and validates product IDs and EUR prices on the server; client-supplied prices are never trusted.
+- `/success`: retrieves checkout payment status server-side through `/api/stripe-session`.
+- `/terms`, `/privacy`, and `/impressum`: legal-information drafts. They are explicitly marked for legal review and are not a substitute for finalized, accurate legal disclosures.
+
+### Stripe and fulfillment configuration
+
+- `STRIPE_SECRET_KEY`: server-only Stripe secret key.
+- `STRIPE_WEBHOOK_SECRET`: signing secret for the `/api/stripe-webhook` endpoint.
+- `CHECKOUT_ENABLED=true`: explicit release gate; checkout returns HTTP 503 unless this is enabled.
+- `SUPPLIER_ORDER_FULFILLMENT_URL` and `SUPPLIER_ORDER_FULFILLMENT_TOKEN`: optional HTTPS adapter that receives a verified paid checkout event. Requests include an idempotency key based on the Stripe event ID.
+
+The webhook verifies Stripe signatures and only forwards orders after a paid checkout event. **The configured adapter is not an AliExpress order-placement implementation by itself.** The AliExpress affiliate product-query API provides product discovery; it does not, by itself, establish authorized checkout, SKU-level inventory reservation, supplier order creation, or shipment tracking. Do not set `CHECKOUT_ENABLED=true` until a real supplier order adapter is implemented and tested end-to-end, the fulfillment provider's API permissions are confirmed, shipping/tax/returns rules are set, and the legal pages have been reviewed. Without the fulfillment URL/token, a paid order is logged for manual handling and is not automatically sent to a supplier.
+
+Never commit secret values or expose them with a `NEXT_PUBLIC_` prefix. After changing Vercel environment variables, redeploy the intended environment. A successful build confirms compilation only; it does not prove API credentials, live Stripe configuration, supplier access, or fulfillment.
