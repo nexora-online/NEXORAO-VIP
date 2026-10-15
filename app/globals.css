@@ -33,3 +33,80 @@ html[dir="rtl"] .category-info { text-align: right; align-items: flex-start; }
 html[dir="rtl"] .promise { direction: rtl; text-align: right; }
 html[dir="rtl"] .footer-top { direction: rtl; }
 html[dir="rtl"] .legal-content { text-align: right; }
+
+
+/* Standalone luxury commerce pages */
+.store-subpage{min-height:100vh;background:radial-gradient(ellipse at 50% 0,rgba(112,77,20,.12),transparent 45%),var(--bg);color:var(--text);font:12px 'Montserrat',Arial,sans-serif;letter-spacing:.02em}
+.subpage-header{min-height:100px;padding:20px 6%;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #59441b66}
+.subpage-header .brand{display:flex;align-items:center;flex-direction:column;gap:4px;color:var(--gold-hi)}
+.subpage-header .brand strong{font:500 28px 'Cinzel',serif;letter-spacing:.22em;background:var(--gold-grad);background-clip:text;-webkit-background-clip:text;color:transparent}
+.subpage-header .brand small{font-size:7px;letter-spacing:.2em;color:#b3a37c}
+.subpage-link,.back-link{display:inline-flex;align-items:center;gap:8px;color:#d2bd7d;font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.subpage-wrap{width:min(1180px,90%);margin:0 auto;padding:44px 0 90px;min-height:55vh}
+.subpage-title{font:500 clamp(32px,5vw,54px) 'Cinzel',serif;color:var(--gold-hi);margin:14px 0 30px}
+.subpage-status{margin:45px 0;padding:36px;border:1px solid #59441b;background:var(--glass);text-align:center;color:#bfb4a3}
+.product-detail-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(320px,.9fr);gap:clamp(30px,6vw,90px);align-items:center;margin-top:35px}
+.detail-image{height:min(680px,68vw);min-height:420px;background:#0c0907;border:1px solid #3d2e15;display:grid;place-items:center;padding:24px}
+.detail-image img{width:100%;height:100%;object-fit:contain;object-position:center}
+.detail-copy h1{font:500 clamp(28px,4vw,44px) 'Cinzel',serif;line-height:1.25;color:#f0dfb4;margin:18px 0}
+.detail-category{color:var(--muted);letter-spacing:.18em;text-transform:uppercase;font-size:9px}
+.detail-price{font:500 27px 'Cinzel',serif;color:var(--gold-hi);margin:24px 0}
+.detail-description{color:#b8ad9c;line-height:2;max-width:500px}
+.detail-availability{display:flex;align-items:center;gap:9px;color:#c8b981;margin:22px 0;font-size:10px}
+.detail-add{min-width:230px}
+.gold-button:disabled{opacity:.5;cursor:not-allowed}
+.collection-hero{padding:75px 8% 68px;text-align:center;border-bottom:1px solid #382a14;background:linear-gradient(135deg,rgba(212,175,55,.08),transparent 60%)}
+.collection-hero h1{font:500 clamp(34px,6vw,64px) 'Cinzel',serif;color:var(--gold-hi);letter-spacing:.12em;margin:20px 0}
+.collection-hero p{color:#b6a990;letter-spacing:.15em;text-transform:uppercase;font-size:10px}
+.subpage-section-head{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #59441b;padding-bottom:16px;margin-bottom:25px}
+.subpage-section-head h2{font:500 23px 'Cinzel',serif;color:#e4d5ad}
+.subpage-section-head span{color:var(--muted);font-size:10px}
+.subpage-product-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px 16px}
+.subpage-product{display:block;min-width:0}
+.subpage-product-image{height:280px;background:#0d0a08;border:1px solid #342714;padding:12px;display:grid;place-items:center;overflow:hidden}
+.subpage-product-image img{width:100%;height:100%;object-fit:contain}
+.subpage-product>span{display:block;color:var(--gold);font-size:8px;letter-spacing:.14em;text-transform:uppercase;margin-top:14px}
+.subpage-product h3{font-size:11px;font-weight:400;line-height:1.7;color:#ded3c1;min-height:38px}
+.subpage-product>strong{font:500 15px 'Cinzel',serif;color:var(--gold-hi)}
+.cart-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,.7fr);gap:36px;align-items:start}
+.cart-lines{border-top:1px solid #4d3b1b}
+.cart-line{display:grid;grid-template-columns:130px 1fr;gap:20px;padding:20px 0;border-bottom:1px solid #4d3b1b}
+.cart-line-image{height:140px;background:#0c0907;padding:10px;display:grid;place-items:center}
+.cart-line-image img{width:100%;height:100%;object-fit:contain}
+.cart-line-copy>span{font-size:8px;color:var(--gold);letter-spacing:.14em;text-transform:uppercase}
+.cart-line-copy h2{font-size:14px;font-weight:400;line-height:1.7;margin:9px 0;color:#e4d5ad}
+.cart-line-copy>strong{font:500 16px 'Cinzel',serif;color:var(--gold-hi)}
+.quantity-control{display:flex;align-items:center;gap:15px;margin-top:14px;color:#bcb09c}
+.quantity-control button{background:transparent;border:1px solid #59441b;color:var(--gold);padding:7px;display:inline-flex}
+.quantity-control button:disabled{opacity:.35}
+.cart-summary,.checkout-card{padding:25px;border:1px solid #59441b;background:rgba(15,10,8,.8);box-shadow:0 20px 60px #0004}
+.cart-summary>div,.checkout-total{display:flex;justify-content:space-between;gap:20px;align-items:center;padding:20px 0;border-bottom:1px solid #59441b;margin-bottom:16px}
+.cart-summary>div strong,.checkout-total strong{font:500 20px 'Cinzel',serif;color:var(--gold-hi)}
+.cart-summary small,.cart-summary p{display:block;font-size:9px;line-height:1.9;color:var(--muted);margin:14px 0}
+.cart-summary .gold-button{width:100%;justify-content:center;text-decoration:none;margin-top:12px}
+.checkout-wrap{max-width:850px}
+.checkout-card{max-width:700px;margin:0 auto}
+.checkout-items{display:grid;gap:14px}
+.checkout-item{display:grid;grid-template-columns:64px 1fr auto;align-items:center;gap:12px;padding-bottom:13px;border-bottom:1px solid #392a14;color:#c9bca7;font-size:10px}
+.checkout-item img{width:64px;height:64px;object-fit:contain;background:#0b0806;padding:5px}
+.checkout-item strong{color:var(--gold-hi);white-space:nowrap}
+.checkout-legal,.checkout-disclaimer{display:block;color:var(--muted);font-size:9px;line-height:1.9}
+.checkout-pay{width:100%;justify-content:center;margin:20px 0}
+.checkout-error,.checkout-alert{border:1px solid #9c4b36;padding:13px;color:#ffb9a4;background:#30140f;font-size:10px;line-height:1.8}
+.success-card{width:min(650px,90%);margin:10vh auto;padding:55px 30px;text-align:center;border:1px solid #71571e;background:var(--glass);display:flex;flex-direction:column;align-items:center;gap:20px}
+.success-card>svg{color:var(--gold-hi)}
+.success-card h1{font:500 clamp(28px,5vw,42px) 'Cinzel',serif;color:var(--gold-hi);margin:0}
+.success-card p{color:#bdb19e;line-height:2;max-width:470px}
+.success-card small{color:var(--muted)}
+.legal-page .legal-document{width:min(850px,90%);margin:0 auto;padding:55px 0 80px}
+.legal-document h1{font:500 clamp(30px,5vw,48px) 'Cinzel',serif;color:var(--gold-hi);margin:20px 0 30px}
+.legal-document h2{font:500 17px 'Cinzel',serif;color:#e5d3a2;margin:34px 0 12px}
+.legal-document p{font-size:11px;line-height:2.1;color:#c2b7a6}
+.legal-document a{color:var(--gold-hi);text-decoration:underline;text-underline-offset:3px}
+.legal-warning{border:1px solid #70551c;padding:17px;background:#100c07;color:#e6ca76!important}
+.subpage-footer{border-top:1px solid #3b2c15;padding:22px 6%;display:flex;justify-content:center;gap:18px;flex-wrap:wrap;color:#8e8579;font-size:9px;letter-spacing:.08em}
+.subpage-footer a:hover,.footer-links a:hover{color:var(--gold-hi)}
+.product-title-link{display:block}
+.panel-checkout{justify-content:center;width:100%;margin-top:16px;text-decoration:none}
+@media(max-width:850px){.product-detail-grid{grid-template-columns:1fr;gap:28px}.detail-image{height:75vw;min-height:300px;max-height:620px}.detail-copy{padding:0 4px}.subpage-product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.subpage-product-image{height:clamp(180px,55vw,320px)}.cart-layout{grid-template-columns:1fr}.cart-summary{position:static}}
+@media(max-width:520px){.subpage-header{padding:18px 5%;min-height:84px}.subpage-header .brand strong{font-size:24px}.subpage-header .brand small{font-size:6px}.subpage-wrap{padding:30px 0 55px}.collection-hero{padding:55px 6%}.cart-line{grid-template-columns:95px 1fr;gap:12px}.cart-line-image{height:115px}.cart-line-copy h2{font-size:11px}.cart-summary,.checkout-card{padding:18px}.checkout-item{grid-template-columns:52px 1fr}.checkout-item img{width:52px;height:52px}.checkout-item strong{grid-column:2}.success-card{padding:40px 20px}.legal-page .legal-document{padding:35px 0 55px}.subpage-footer{gap:12px}.detail-add{width:100%;justify-content:center}}
