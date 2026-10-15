@@ -38,16 +38,27 @@ export async function GET(request: Request) {
     passed: Boolean(mockProduct.id && mockProduct.price > 0 && mockProduct.currency === "EUR"),
     detail: "A local fixture passed product ID, positive price and currency validation; no AliExpress request was made.",
   });
+  const unknownStockProduct = { ...mockProduct, sku: undefined as string | undefined, available: null as boolean | null };
   checks.push({
     name: "Unknown stock fails closed",
-    passed: ({ ...mockProduct, available: null }).available !== true,
+    passed: unknownStockProduct.available !== true,
     detail: "An item with unknown stock is rejected by the checkout eligibility rule.",
+  });
+  checks.push({
+    name: "SKU fallback is non-invented",
+    passed: Boolean(unknownStockProduct.id) && unknownStockProduct.sku === undefined && unknownStockProduct.available === null,
+    detail: "When the affiliate feed has no variant SKU, the product ID remains the catalog key; no SKU or inventory availability is fabricated.",
   });
   const checkoutEligible = mockProduct.available === true && mockProduct.price > 0 && mockProduct.currency === "EUR";
   checks.push({
-    name: "Mock checkout eligibility",
+    name: "Mock pre-checkout validation",
     passed: checkoutEligible,
-    detail: "A synthetic in-stock fixture passes pre-checkout validation; no Stripe Checkout Session or payment was created.",
+    detail: "A synthetic in-stock fixture passes input validation only; this does not create a Stripe session or override the disabled live-checkout flags.",
+  });
+  checks.push({
+    name: "Live checkout remains locked",
+    passed: process.env.CHECKOUT_ENABLED !== "true" && process.env.COMMERCE_RELEASE_APPROVED !== "true",
+    detail: "Neither release flag may be enabled while the code-level simulation is running; no live payment can be initiated by this simulation route.",
   });
 
   const now = Math.floor(Date.now() / 1000);
@@ -61,10 +72,11 @@ export async function GET(request: Request) {
   const sig = signatureFor(raw, String(now), webhookSecret);
   const validSignatureAccepted = verifySignature(raw, "t=" + now + ",v1=" + sig, webhookSecret, now);
   const tamperedSignatureRejected = !verifySignature(raw + " ", "t=" + now + ",v1=" + sig, webhookSecret, now);
+  const staleSignatureRejected = !verifySignature(raw, "t=" + (now - 600) + ",v1=" + sig, webhookSecret, now);
   checks.push({
     name: "Webhook signature verification",
-    passed: validSignatureAccepted && tamperedSignatureRejected,
-    detail: "A locally signed synthetic event was accepted and a tampered payload was rejected using the same timestamp/signature rules; no Stripe webhook was contacted.",
+    passed: validSignatureAccepted && tamperedSignatureRejected && staleSignatureRejected,
+    detail: "A locally signed synthetic event was accepted; tampered payload and stale timestamp were rejected. This is a local HMAC test, not a live Stripe webhook.",
   });
 
   const simulatedOrder = {
