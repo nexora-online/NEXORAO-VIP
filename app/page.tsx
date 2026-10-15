@@ -28,6 +28,7 @@ const[lang,setLang]=useState<Lang>("DE"),[products,setProducts]=useState<Product
 const t={...words.DE,...(words[lang]||words.EN)},rtl=lang==="AR";
 const categoryTitle=(key:string)=>key==="DAMEN"?t.women:key==="HERREN"?t.men:key==="SCHMUCK & UHREN"?t.jewelry:key==="BEAUTY"?t.beauty:key==="ACCESSOIRES"?t.accessories:key==="LIFESTYLE"?t.lifestyle:key;
 useEffect(()=>{let active=true;fetch("/api/catalog?limit=1500",{cache:"no-store"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{if(active)setProducts(Array.isArray(d.products)?d.products:[])}).catch(()=>{if(active)setProducts([])}).finally(()=>{if(active)setLoading(false)});return()=>{active=false}},[]);
+useEffect(()=>{document.documentElement.lang=lang.toLowerCase();document.documentElement.dir=rtl?"rtl":"ltr";},[lang,rtl]);
 const shown=useMemo(()=>products.filter(p=>(p.name+" "+(p.brand||"")+" "+(p.category||"")).toLowerCase().includes(query.toLowerCase())&&(category==="ALL"||(p.category||"").toUpperCase()===category)),[products,query,category]);
 const money=(p:Product)=>new Intl.NumberFormat(lang.toLowerCase(),{style:"currency",currency:p.currency||"EUR"}).format(p.price);
 const go=(c="ALL")=>{setCategory(c);document.getElementById("catalog")?.scrollIntoView({behavior:"smooth"});setMenu(false)};
