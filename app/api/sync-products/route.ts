@@ -1,3 +1,4 @@
+import { put, list } from "@vercel/blob";
 import { createHmac } from "node:crypto";
 import { NextResponse } from "next/server";
 
@@ -8,22 +9,19 @@ export const maxDuration = 60;
 
 type StoreCategory = "DAMEN" | "HERREN" | "SCHMUCK & UHREN" | "BEAUTY" | "ACCESSOIRES" | "LIFESTYLE";
 type StoreProduct = {
-  id: string;
-  sku?: string;
-  name: string;
-  brand: string;
-  category: StoreCategory;
-  price: number;
-  originalPrice?: number;
-  discountPercent?: number;
-  currency: string;
-  imageUrl: string;
-  productUrl: string;
-  available: boolean | null;
-  inventoryStatus: "available-unknown-quantity" | "unknown";
-  supplier: "AliExpress";
+  id: string; sku?: string; name: string; brand: string; category: StoreCategory;
+  price: number; originalPrice?: number; discountPercent?: number; currency: "EUR";
+  imageUrl: string; productUrl: string; luxuryTag: "curated" | "simulated";
+  available: boolean | null; inventoryStatus: "available-unknown-quantity" | "unknown";
+  supplier: "AliExpress" | "Simulation";
 };
 type SearchGroup = { category: StoreCategory; keywords: string };
+type CatalogBody = {
+  products: StoreProduct[]; count: number; limit: 1000; configured: boolean;
+  source: "aliexpress" | "simulation"; supplier: string; persisted: boolean;
+  categories: Record<string, number>; partial: boolean; failedCategories: string[];
+  inventoryNote: string; notice?: string;
+};
 
 const SEARCH_GROUPS: SearchGroup[] = [
   { category: "DAMEN", keywords: "women fashion elegant dress" },
@@ -33,14 +31,13 @@ const SEARCH_GROUPS: SearchGroup[] = [
   { category: "ACCESSOIRES", keywords: "women handbags accessories" },
   { category: "LIFESTYLE", keywords: "home lifestyle decor" },
 ];
-
-// Best-effort warm-instance cache to reduce supplier API calls. Durable catalog storage requires a database.
-let cachedCatalog: { key: string; expiresAt: number; body: unknown } | null = null;
+const BLOB_PATH = "catalog/nexora-vip-products.json";
+const MAX_AGE_MS = 24 * 60 * 60 * 1000;
+let cachedCatalog: { key: string; expiresAt: number; body: CatalogBody } | null = null;
 
 const text = (value: unknown): string => typeof value === "string" || typeof value === "number" ? String(value).trim() : "";
 const safeHttps = (value: unknown): string => {
-  const raw = text(value);
-  try { const url = new URL(raw); return url.protocol === "https:" ? url.toString() : ""; } catch { return ""; }
+  try { const url = new URL(text(value)); return url.protocol === "https:" ? url.toString() : ""; } catch { return ""; }
 };
 const amount = (value: unknown): number | null => {
   const raw = text(value).replace(/[^0-9.,-]/g, "");
@@ -48,48 +45,34 @@ const amount = (value: unknown): number | null => {
     ? (raw.lastIndexOf(",") > raw.lastIndexOf(".") ? raw.replace(/\./g, "").replace(",", ".") : raw.replace(/,/g, ""))
     : raw.replace(",", ".");
   const parsed = Number(normalized);
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 };
 function classifyProduct(value: Record<string, unknown>, fallback: StoreCategory): StoreProduct | null {
   const id = text(value.product_id ?? value.productId ?? value.id);
   const name = text(value.product_title ?? value.productTitle ?? value.title ?? value.name);
-  const smallImages = value.product_small_image_urls ?? value.productSmallImageUrls ?? value.small_images ?? value.images;
-  const imageList = Array.isArray(smallImages) ? smallImages : typeof smallImages === "string" ? smallImages.split(",") : [];
+  const rawImages = value.product_small_image_urls ?? value.productSmallImageUrls ?? value.small_images ?? value.images;
+  const imageList = Array.isArray(rawImages) ? rawImages : typeof rawImages === "string" ? rawImages.split(",") : [];
   const imageUrl = safeHttps(value.product_main_image_url ?? value.productMainImageUrl ?? value.imageUrl ?? value.image) || imageList.map(safeHttps).find(Boolean) || "";
   const price = amount(value.target_sale_price ?? value.targetSalePrice ?? value.app_sale_price ?? value.sale_price ?? value.price);
-  const originalPrice = amount(value.target_original_price ?? value.targetOriginalPrice ?? value.original_price ?? value.originalPrice ?? value.retail_price);
+  const rawCurrency = text(value.target_sale_price_currency ?? value.targetSalePriceCurrency ?? value.target_currency ?? value.targetCurrency).toUpperCase();
   const productUrl = safeHttps(value.product_detail_url ?? value.productDetailUrl ?? value.promotion_link ?? value.product_url);
-  if (!id || !name || !imageUrl || price === null) return null;
+  if (!id || !name || !imageUrl || !productUrl || price === null || rawCurrency !== "EUR") return null;
 
-  const searchable = [
-    name,
-    text(value.first_level_category_name ?? value.firstLevelCategoryName),
-    text(value.second_level_category_name ?? value.secondLevelCategoryName),
-  ].join(" ").toLowerCase();
+  const searchable = [name, text(value.first_level_category_name ?? value.firstLevelCategoryName), text(value.second_level_category_name ?? value.secondLevelCategoryName)].join(" ").toLowerCase();
   let category: StoreCategory = fallback;
   if (/watch|jewel|ring|necklace|bracelet|earring|schmuck|uhr/.test(searchable)) category = "SCHMUCK & UHREN";
-  else if (/beauty|makeup|cosmetic|skin.?care|serum|lipstick|mascara/.test(searchable)) category = "BEAUTY";
+  else if (/beauty|makeup|cosmetic|skin.?care|serum|lipstick|mascara|perfume|fragrance|lingerie/.test(searchable)) category = "BEAUTY";
   else if (/handbag|bag|wallet|sunglass|belt|accessor/.test(searchable)) category = "ACCESSOIRES";
   else if (/home|kitchen|decor|lamp|lifestyle|furniture/.test(searchable)) category = "LIFESTYLE";
   else if (/\bmen\b|\bmale\b|\bherr(en)?\b|\bmens\b|\bman\b/.test(searchable)) category = "HERREN";
-  else if (/\bwomen\b|\bfemale\b|\bwomens\b|\bdress\b|\bladies\b|\bdamen\b/.test(searchable)) category = "DAMEN";
-
-  // Affiliate discovery APIs do not reliably expose variant SKUs or live warehouse stock.
-  // Do not fabricate either: preserve product ID as the stable catalog key and mark inventory unknown.
+  else if (/\bwomen\b|\bfemale\b|\bwomens\b|\bdress\b|\bladies\b|\bdamen\b|lingerie/.test(searchable)) category = "DAMEN";
+  const originalPrice = amount(value.target_original_price ?? value.targetOriginalPrice ?? value.original_price ?? value.originalPrice ?? value.retail_price);
   return {
-    id,
-    ...(text(value.sku ?? value.sku_id ?? value.skuId) ? { sku: text(value.sku ?? value.sku_id ?? value.skuId) } : {}),
-    name,
-    brand: text(value.shop_name ?? value.shopName ?? value.brand) || "AliExpress",
-    category,
-    price,
-    ...(originalPrice !== null && price !== null && originalPrice > price ? { originalPrice, discountPercent: Math.round((1 - price / originalPrice) * 100) } : {}),
-    currency: text(value.target_sale_price_currency ?? value.targetSalePriceCurrency ?? value.target_currency ?? value.targetCurrency) || "EUR",
-    imageUrl,
-    productUrl,
-    available: null,
-    inventoryStatus: "unknown",
-    supplier: "AliExpress",
+    id, ...(text(value.sku ?? value.sku_id ?? value.skuId) ? { sku: text(value.sku ?? value.sku_id ?? value.skuId) } : {}),
+    name, brand: text(value.shop_name ?? value.shopName ?? value.brand) || "AliExpress", category, price,
+    ...(originalPrice !== null && originalPrice > price ? { originalPrice, discountPercent: Math.round((1 - price / originalPrice) * 100) } : {}),
+    currency: "EUR", imageUrl, productUrl, luxuryTag: "curated",
+    available: null, inventoryStatus: "unknown", supplier: "AliExpress",
   };
 }
 function collectProductObjects(input: unknown, out: Record<string, unknown>[] = [], depth = 0): Record<string, unknown>[] {
@@ -98,50 +81,33 @@ function collectProductObjects(input: unknown, out: Record<string, unknown>[] = 
   if (typeof input !== "object") return out;
   const obj = input as Record<string, unknown>;
   if ((obj.product_id != null || obj.productId != null) && (obj.product_title != null || obj.productTitle != null || obj.title != null)) out.push(obj);
-  for (const [key, value] of Object.entries(obj)) {
-    if (key === "product" || key === "products" || typeof value === "object") collectProductObjects(value, out, depth + 1);
-  }
+  for (const [key, value] of Object.entries(obj)) if (key === "product" || key === "products" || typeof value === "object") collectProductObjects(value, out, depth + 1);
   return out;
 }
 function signRequest(params: Record<string, string>, secret: string): string {
-  const sorted = Object.keys(params).filter(key => key !== "sign").sort();
-  const payload = sorted.map(key => key + params[key]).join("");
+  const payload = Object.keys(params).filter(key => key !== "sign").sort().map(key => key + params[key]).join("");
   return createHmac("sha256", secret).update(payload, "utf8").digest("hex").toUpperCase();
 }
-async function searchGroup(group: SearchGroup, appKey: string, appSecret: string, country: string, currency: string, language: string): Promise<StoreProduct[]> {
+async function searchGroup(group: SearchGroup, appKey: string, appSecret: string): Promise<StoreProduct[]> {
   const unique = new Map<string, StoreProduct>();
-  // Import up to four pages per category (200 source listings per category before deduplication).
-  // The total catalog is capped at 1,000 products; server-side calls remain bounded.
   for (let page = 1; page <= 4; page++) {
     const params: Record<string, string> = {
-      app_key: appKey,
-      method: "aliexpress.affiliate.product.query",
-      timestamp: String(Date.now()),
-      sign_method: "sha256",
-      format: "json",
-      v: "2.0",
-      keywords: group.keywords,
-      page_no: String(page),
-      page_size: "50",
-      target_currency: currency,
-      target_language: language,
-      ship_to_country: country,
-      sort: "LAST_VOLUME_DESC",
+      app_key: appKey, method: "aliexpress.affiliate.product.query", timestamp: String(Date.now()),
+      sign_method: "sha256", format: "json", v: "2.0", keywords: group.keywords,
+      page_no: String(page), page_size: "50", target_currency: "EUR", target_language: "DE",
+      ship_to_country: "DE", sort: "LAST_VOLUME_DESC",
       fields: "product_id,product_title,product_main_image_url,target_sale_price,target_sale_price_currency,target_original_price,product_detail_url,first_level_category_name,second_level_category_name,shop_name,product_small_image_urls,product_video_url,evaluate_rate,lastest_volume",
     };
     params.sign = signRequest(params, appSecret);
     const response = await fetch("https://api-sg.aliexpress.com/sync", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8", Accept: "application/json" },
-      body: new URLSearchParams(params).toString(),
-      cache: "no-store",
-      signal: AbortSignal.timeout(12000),
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8", Accept: "application/json" },
+      body: new URLSearchParams(params).toString(), cache: "no-store", signal: AbortSignal.timeout(12000),
     });
     if (!response.ok) throw new Error("AliExpress API returned HTTP " + response.status);
     const data: unknown = await response.json();
     if (!data || typeof data !== "object") throw new Error("AliExpress returned an invalid response");
     const root = data as Record<string, unknown>;
-    if (root.error_response || root.error || (root.code != null && Number(root.code) >= 400)) throw new Error("AliExpress rejected the product query");
+    if (root.error_response || root.error || (root.code != null && Number(root.code) >= 400)) throw new Error("AliExpress rejected the query");
     const candidates = collectProductObjects(data);
     for (const candidate of candidates) {
       const product = classifyProduct(candidate, group.category);
@@ -151,58 +117,114 @@ async function searchGroup(group: SearchGroup, appKey: string, appSecret: string
   }
   return [...unique.values()];
 }
-export async function POST(request: Request) {
-  return GET(request);
+function simulationCatalog(): StoreProduct[] {
+  const items: Array<[string, string, StoreCategory, number, string]> = [
+    ["demo-women-coat", "Demo — Elegant women's coat", "DAMEN", 89, "photo-1548126032-079a0fb0099d"],
+    ["demo-men-jacket", "Demo — Classic men's jacket", "HERREN", 119, "photo-1529139574466-a303027c1d8b"],
+    ["demo-evening-bag", "Demo — Evening handbag", "ACCESSOIRES", 49, "photo-1584917865442-de89df76afd3"],
+    ["demo-watch", "Demo — Minimalist wristwatch", "SCHMUCK & UHREN", 79, "photo-1524592094714-0f0654e20314"],
+    ["demo-skincare", "Demo — Skincare gift set", "BEAUTY", 35, "photo-1608248543803-ba4f8c70ae0b"],
+    ["demo-perfume", "Demo — Perfume bottle", "BEAUTY", 59, "photo-1541643600914-78b084683601"],
+    ["demo-lingerie", "Demo — Lingerie collection", "DAMEN", 39, "photo-1566479179817-c0c0f9f5a4a5"],
+    ["demo-sunglasses", "Demo — Fashion sunglasses", "ACCESSOIRES", 29, "photo-1511499767150-a48a237f0083"],
+    ["demo-home-decor", "Demo — Decorative home object", "LIFESTYLE", 25, "photo-1616486338812-3dadae4b4ace"],
+    ["demo-men-shirt", "Demo — Men's tailored shirt", "HERREN", 45, "photo-1603252109303-2751441dd157"],
+  ];
+  return items.map(([id, name, category, price, photo]) => ({
+    id, name, category, price, currency: "EUR", brand: "Demo catalog",
+    imageUrl: "https://images.unsplash.com/" + photo + "?auto=format&fit=crop&w=900&q=80",
+    productUrl: "", luxuryTag: "simulated", available: null, inventoryStatus: "unknown", supplier: "Simulation",
+  }));
 }
-
+async function readPersistedCatalog(): Promise<CatalogBody | null> {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) return null;
+  try {
+    const { blobs } = await list({ prefix: BLOB_PATH, limit: 1 });
+    const blob = blobs.find(item => item.pathname === BLOB_PATH);
+    if (!blob) return null;
+    const response = await fetch(blob.url, { cache: "no-store", signal: AbortSignal.timeout(8000) });
+    if (!response.ok) return null;
+    const data: unknown = await response.json();
+    if (!data || typeof data !== "object" || !Array.isArray((data as CatalogBody).products)) return null;
+    const stored = data as CatalogBody & { savedAt?: string };
+    if (stored.savedAt && Date.now() - Date.parse(stored.savedAt) > MAX_AGE_MS) return null;
+    return stored;
+  } catch { return null; }
+}
+async function persistCatalog(body: CatalogBody): Promise<boolean> {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) return false;
+  try {
+    await put(BLOB_PATH, JSON.stringify({ ...body, savedAt: new Date().toISOString() }), {
+      access: "public", addRandomSuffix: false, allowOverwrite: true, contentType: "application/json",
+    });
+    return true;
+  } catch { return false; }
+}
+function responseBody(body: CatalogBody, status = 200) {
+  return NextResponse.json(body, { status, headers: { "Cache-Control": "no-store" } });
+}
+export async function POST(request: Request) { return GET(request); }
 export async function GET(request: Request) {
-  const appKey = process.env.ALIEXPRESS_APP_KEY;
-  const appSecret = process.env.ALIEXPRESS_APP_SECRET;
+  const appKey = process.env.ALIEXPRESS_APP_KEY?.trim();
+  const appSecret = process.env.ALIEXPRESS_APP_SECRET?.trim();
+  const url = new URL(request.url);
+  if ((url.searchParams.get("country") || "DE").toUpperCase() !== "DE" || (url.searchParams.get("currency") || "EUR").toUpperCase() !== "EUR" || (url.searchParams.get("language") || "DE").toUpperCase() !== "DE") {
+    return responseBody({ products: [], count: 0, limit: 1000, configured: Boolean(appKey && appSecret), source: "simulation", supplier: "Simulation", persisted: false, categories: {}, partial: false, failedCategories: [], inventoryNote: "Stock is not verified." } as CatalogBody, 400);
+  }
+  const cacheKey = [appKey || "simulation", "DE", "EUR", "DE"].join(":");
+  if (cachedCatalog?.key === cacheKey && cachedCatalog.expiresAt > Date.now()) return responseBody(cachedCatalog.body);
   if (!appKey || !appSecret) {
-    return NextResponse.json({
-      products: [], count: 0, configured: false, supplier: "AliExpress",
-      error: "AliExpress credentials are not configured in Vercel. Add ALIEXPRESS_APP_KEY and ALIEXPRESS_APP_SECRET as server-side environment variables.",
-    }, { status: 503, headers: { "Cache-Control": "no-store" } });
-  }
-  const requestUrl = new URL(request.url);
-  const country = (requestUrl.searchParams.get("country") || "DE").toUpperCase().slice(0, 2);
-  const currency = (requestUrl.searchParams.get("currency") || "EUR").toUpperCase().slice(0, 3);
-  const language = (requestUrl.searchParams.get("language") || "DE").toUpperCase().slice(0, 2);
-  if (country !== "DE" || currency !== "EUR" || language !== "DE") {
-    return NextResponse.json({ products: [], count: 0, configured: true, error: "Catalog import currently supports the verified Germany/EUR/German query only." }, { status: 400, headers: { "Cache-Control": "no-store" } });
-  }
-  const cacheKey = [appKey, country, currency, language].join(":");
-  if (cachedCatalog && cachedCatalog.key === cacheKey && cachedCatalog.expiresAt > Date.now()) {
-    return NextResponse.json(cachedCatalog.body, { headers: { "Cache-Control": "public, s-maxage=600, stale-while-revalidate=3600" } });
+    const persisted = await readPersistedCatalog();
+    if (persisted) {
+      const body = { ...persisted, persisted: true, notice: "Showing the last saved catalog. Inventory is not verified; checkout must remain disabled." };
+      cachedCatalog = { key: cacheKey, expiresAt: Date.now() + 10 * 60 * 1000, body };
+      return responseBody(body);
+    }
+    const body: CatalogBody = {
+      products: simulationCatalog(), count: 10, limit: 1000, configured: false, source: "simulation", supplier: "Simulation", persisted: false,
+      categories: Object.fromEntries(SEARCH_GROUPS.map(group => [group.category, simulationCatalog().filter(p => p.category === group.category).length])),
+      partial: false, failedCategories: [], inventoryNote: "Simulated examples only: no supplier, SKU, price, or stock has been verified.",
+      notice: "SIMULATION ONLY — these are illustrative demo entries, not real products. Payments and fulfillment must remain disabled.",
+    };
+    cachedCatalog = { key: cacheKey, expiresAt: Date.now() + 60 * 1000, body };
+    return responseBody(body);
   }
   try {
-    const results = await Promise.allSettled(SEARCH_GROUPS.map(group => searchGroup(group, appKey, appSecret, country, currency, language)));
+    const groups = await Promise.allSettled(SEARCH_GROUPS.map(group => searchGroup(group, appKey, appSecret)));
     const products = new Map<string, StoreProduct>();
     const errors: string[] = [];
-    results.forEach((result, index) => {
-      if (result.status === "fulfilled") result.value.forEach(product => { if (!products.has(product.id)) products.set(product.id, product); });
+    groups.forEach((result, index) => {
+      if (result.status === "fulfilled") result.value.forEach(p => { if (!products.has(p.id)) products.set(p.id, p); });
       else errors.push(SEARCH_GROUPS[index].category);
     });
     const all = [...products.values()].slice(0, 1000);
-    if (all.length === 0) {
-      return NextResponse.json({
-        products: [], count: 0, configured: true, supplier: "AliExpress",
-        error: "AliExpress returned no usable products. Verify the app's API permissions, signature method, and product-query access.",
-        failedCategories: errors,
-      }, { status: 502, headers: { "Cache-Control": "no-store" } });
+    if (!all.length) {
+      const persisted = await readPersistedCatalog();
+      if (persisted) return responseBody({ ...persisted, persisted: true, notice: "Supplier sync failed; showing previously saved catalog. Inventory remains unverified." }, 200);
+      return responseBody({
+        products: [], count: 0, limit: 1000, configured: true, source: "aliexpress", supplier: "AliExpress", persisted: false,
+        categories: {}, partial: errors.length > 0, failedCategories: errors,
+        inventoryNote: "Affiliate product-query API does not verify live SKU stock.",
+        notice: "No valid EUR products with secure image and product links were returned. Demo data is not mixed into live supplier results.",
+      }, 502);
     }
-    const body = {
-      products: all, count: all.length, limit: 1000, configured: true, supplier: "AliExpress" as const,
-      categories: Object.fromEntries(SEARCH_GROUPS.map(group => [group.category, all.filter(product => product.category === group.category).length])),
-      inventoryNote: "The affiliate product-query API does not reliably expose live SKU-level stock. Inventory is intentionally marked unknown until a stock-capable, authorized API is configured.",
+    const body: CatalogBody = {
+      products: all, count: all.length, limit: 1000, configured: true, source: "aliexpress", supplier: "AliExpress",
+      persisted: false, categories: Object.fromEntries(SEARCH_GROUPS.map(group => [group.category, all.filter(p => p.category === group.category).length])),
       partial: errors.length > 0, failedCategories: errors,
+      inventoryNote: "Affiliate discovery does not reliably expose live SKU-level stock. Stock is unknown until a stock-capable supplier API verifies it.",
     };
+    body.persisted = await persistCatalog(body);
+    if (!body.persisted) body.notice = "Catalog fetched but not durably saved. Configure BLOB_READ_WRITE_TOKEN in Vercel to enable persistent storage.";
     cachedCatalog = { key: cacheKey, expiresAt: Date.now() + 10 * 60 * 1000, body };
-    return NextResponse.json(body, { headers: { "Cache-Control": "public, s-maxage=600, stale-while-revalidate=3600" } });
+    return responseBody(body);
   } catch {
-    return NextResponse.json({
-      products: [], count: 0, configured: true, supplier: "AliExpress",
-      error: "AliExpress synchronization failed. Check API access, credentials and permissions in the provider console.",
-    }, { status: 502, headers: { "Cache-Control": "no-store" } });
+    const persisted = await readPersistedCatalog();
+    if (persisted) return responseBody({ ...persisted, persisted: true, notice: "Live sync failed; serving the previously saved catalog. Stock is not verified." });
+    return responseBody({
+      products: [], count: 0, limit: 1000, configured: true, source: "aliexpress", supplier: "AliExpress", persisted: false,
+      categories: {}, partial: false, failedCategories: [], inventoryNote: "Stock is not verified.",
+      notice: "AliExpress sync failed and no saved catalog was available. Check provider access and BLOB_READ_WRITE_TOKEN.",
+    } as CatalogBody, 502);
   }
 }
