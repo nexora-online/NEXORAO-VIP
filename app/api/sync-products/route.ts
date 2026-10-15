@@ -38,7 +38,11 @@ const safeHttps = (value: unknown): string => {
   try { const url = new URL(raw); return url.protocol === "https:" ? url.toString() : ""; } catch { return ""; }
 };
 const amount = (value: unknown): number | null => {
-  const raw = text(value).replace(/[^0-9.,-]/g, "");\n  const normalized = raw.includes(",") && raw.includes(".") ? (raw.lastIndexOf(",") > raw.lastIndexOf(".") ? raw.replace(/\\./g, "").replace(",", ".") : raw.replace(/,/g, "")) : raw.replace(",", ".");\n  const parsed = Number(normalized);
+  const raw = text(value).replace(/[^0-9.,-]/g, "");
+  const normalized = raw.includes(",") && raw.includes(".")
+    ? (raw.lastIndexOf(",") > raw.lastIndexOf(".") ? raw.replace(/\./g, "").replace(",", ".") : raw.replace(/,/g, ""))
+    : raw.replace(",", ".");
+  const parsed = Number(normalized);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 };
 function classifyProduct(value: Record<string, unknown>, fallback: StoreCategory): StoreProduct | null {
@@ -101,7 +105,7 @@ async function searchGroup(group: SearchGroup, appKey: string, appSecret: string
   const params: Record<string, string> = {
     app_key: appKey,
     method: "aliexpress.affiliate.product.query",
-    timestamp: new Date().toISOString().replace(/\.\d{3}Z$/, "Z"),
+    timestamp: new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().replace("T", " ").replace(/\.\d{3}Z$/, ""),
     sign_method: "sha256",
     format: "json",
     v: "2.0",
