@@ -10,7 +10,7 @@ export const maxDuration = 60;
 type StoreCategory = "DAMEN" | "HERREN" | "SCHMUCK & UHREN" | "BEAUTY" | "ACCESSOIRES" | "LIFESTYLE";
 type StoreProduct = {
   id: string; sku?: string; name: string; brand: string; category: StoreCategory;
-  price: number; originalPrice?: number; discountPercent?: number; currency: "EUR";
+  price: number; displayPrice: string; originalPrice?: number; discountPercent?: number; currency: "EUR";
   imageUrl: string; productUrl: string; luxuryTag: "unverified" | "simulated";
   available: boolean | null; inventoryStatus: "available-unknown-quantity" | "unknown";
   supplier: "AliExpress" | "Simulation";
@@ -69,7 +69,7 @@ function classifyProduct(value: Record<string, unknown>, fallback: StoreCategory
   const originalPrice = amount(value.target_original_price ?? value.targetOriginalPrice ?? value.original_price ?? value.originalPrice ?? value.retail_price);
   return {
     id, ...(text(value.sku ?? value.sku_id ?? value.skuId) ? { sku: text(value.sku ?? value.sku_id ?? value.skuId) } : {}),
-    name, brand: text(value.shop_name ?? value.shopName ?? value.brand) || "AliExpress", category, price,
+    name, brand: text(value.shop_name ?? value.shopName ?? value.brand) || "AliExpress", category, price, displayPrice: new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(price),
     ...(originalPrice !== null && originalPrice > price ? { originalPrice, discountPercent: Math.round((1 - price / originalPrice) * 100) } : {}),
     currency: "EUR", imageUrl, productUrl, luxuryTag: "unverified" as const,
     available: null, inventoryStatus: "unknown", supplier: "AliExpress",
@@ -131,7 +131,7 @@ function simulationCatalog(): StoreProduct[] {
     ["demo-men-shirt", "Demo — Men's tailored shirt", "HERREN", 45, "photo-1603252109303-2751441dd157"],
   ];
   return items.map(([id, name, category, price, photo]) => ({
-    id, name, category, price, currency: "EUR" as const, brand: "Demo catalog",
+    id, name, category, price, displayPrice: new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR" }).format(price), currency: "EUR" as const, brand: "Demo catalog",
     imageUrl: "https://images.unsplash.com/" + photo + "?auto=format&fit=crop&w=900&q=80",
     productUrl: "", luxuryTag: "simulated" as const, available: null, inventoryStatus: "unknown" as const, supplier: "Simulation" as const,
   }));
