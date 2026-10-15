@@ -16,3 +16,20 @@ main[dir=rtl] .hero-copy,main[dir=rtl] .section-heading,main[dir=rtl] .footer-li
     transition-delay: 0ms !important;
   }
 }
+
+/* Arabic / RTL presentation: preserve the premium layout while aligning reading flow. */
+html[dir="rtl"] body { direction: rtl; }
+html[dir="rtl"] .announcement,
+html[dir="rtl"] .hero-copy,
+html[dir="rtl"] .closing-content,
+html[dir="rtl"] .footer-brand,
+html[dir="rtl"] .footer-links { text-align: right; }
+html[dir="rtl"] .utility,
+html[dir="rtl"] .site-header,
+html[dir="rtl"] .section-heading,
+html[dir="rtl"] .product-meta,
+html[dir="rtl"] .footer-bottom { direction: rtl; }
+html[dir="rtl"] .category-info { text-align: right; align-items: flex-start; }
+html[dir="rtl"] .promise { direction: rtl; text-align: right; }
+html[dir="rtl"] .footer-top { direction: rtl; }
+html[dir="rtl"] .legal-content { text-align: right; }
