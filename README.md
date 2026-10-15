@@ -22,7 +22,7 @@ The storefront now includes a browser-persisted cart, product detail and collect
 
 ## AliExpress Open Platform product sync
 
-The storefront reads its supplier catalog from `/api/sync-products?country=DE&currency=EUR&language=DE`. The route queries the AliExpress affiliate product-query API server-side and maps eligible products into the six storefront categories. Product images use `object-fit: contain` to avoid cropping. Affiliate product data does not guarantee seller inventory or variant-level SKU availability; unknown inventory is explicitly marked unknown rather than fabricated.
+The storefront reads its supplier catalog from `/api/sync-products?country=DE&currency=EUR&language=DE`. The route queries up to four pages per category using popularity sorting, deduplicates listings, caps the response at 1,000 items, and maps products into the six storefront categories. Product-card discounts are shown only when the supplier response includes a higher original price. Product images use `object-fit: contain` to avoid cropping. Affiliate product data does not guarantee seller inventory or variant-level SKU availability; unknown inventory is explicitly marked unknown rather than fabricated.
 
 Set these variables in the Vercel project environment (Production and Preview as needed):
 
