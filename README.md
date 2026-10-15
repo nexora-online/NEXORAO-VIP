@@ -16,9 +16,9 @@ Configure one of the supported server-side supplier connections in Vercel:
 
 The generic feed must return a JSON array or an object with a `products` array. Each product needs a stable `id`, `name`, numeric `price`, and HTTPS image URL (`imageUrl` or `image`). Optional fields include `brand`, `category`, `currency`, and `available`. Products marked unavailable are not displayed. The endpoint validates product data and caps the response at 1,500 items. The CJ adapter requires a valid CJ API key and API access; a successful GitHub build alone does not verify supplier credentials or guarantee that products will load.
 
-## Preview and payments
+## Commerce readiness and payments
 
-The current storefront is a preview: cart and wishlist controls are local interface interactions only. Checkout does not create orders or collect money. Real payments require the selected payment provider's credentials, verified business details, order handling, shipping/tax configuration, and reviewed legal pages before live launch.
+The storefront now includes a browser-persisted cart, product detail and collection pages, a Stripe Checkout session route, a signed Stripe webhook, and a payment-status page. Live checkout remains intentionally blocked unless `CHECKOUT_ENABLED=true`. This release gate must remain disabled until the real supplier order-placement adapter, shipping/tax/returns rules, and legally reviewed business disclosures are complete. A Stripe key in Vercel alone does not make order fulfillment production-ready.
 
 ## AliExpress Open Platform product sync
 
