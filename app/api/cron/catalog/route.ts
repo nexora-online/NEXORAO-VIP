@@ -11,8 +11,9 @@ export async function GET(request: Request) {
   const response = await fetch(new URL("/api/sync-products?country=DE&currency=EUR&language=DE", base), { cache: "no-store", signal: AbortSignal.timeout(55000) });
   const data: unknown = await response.json();
   const payload = data && typeof data === "object" ? data as { count?: unknown; configured?: unknown; partial?: unknown; error?: unknown; failedCategories?: unknown } : {};
+  const healthy = response.ok && payload.configured === true && typeof payload.count === "number" && payload.count > 0;
   return NextResponse.json({
-   ok: response.ok && typeof payload.count === "number" && payload.count > 0,
+   ok: healthy,
    supplier: "AliExpress",
    configured: payload.configured === true,
    productCount: typeof payload.count === "number" ? payload.count : 0,
@@ -21,7 +22,7 @@ export async function GET(request: Request) {
    checkedAt: new Date().toISOString(),
    ...(typeof payload.error === "string" ? { error: payload.error } : {}),
    persistence: "This scheduled route validates and warms the supplier query cache; durable product storage requires a database.",
-  }, { status: response.ok ? 200 : 502, headers: { "Cache-Control": "no-store" } });
+  }, { status: healthy ? 200 : 502, headers: { "Cache-Control": "no-store" } });
  } catch {
   return NextResponse.json({ ok: false, error: "AliExpress scheduled supplier check failed." }, { status: 502 });
  }
