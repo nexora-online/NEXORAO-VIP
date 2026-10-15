@@ -1,3 +1,0 @@
-# Persistence plan
-
-Before enabling real checkout, select and configure a managed database (for example, the existing company-approved database service). Store normalized catalog rows, orders, payment events, supplier submission attempts and shipment tracking. Use migrations, backups, least-privilege server credentials and idempotency keys. No database has been wired into this repository yet, so catalog refresh is fetch-and-validate rather than durable storage.
