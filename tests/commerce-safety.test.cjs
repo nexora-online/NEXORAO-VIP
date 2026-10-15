@@ -101,9 +101,13 @@ test("storefront and collection pages keep a built-in EUR catalog when supplier 
   const fallback = read("lib/fallback-catalog.ts");
   assert.match(page, /import \{ FALLBACK_PRODUCTS \} from "\.\.\/lib\/fallback-catalog"/);
   assert.match(page, /useState<Product\[]>\(FALLBACK_PRODUCTS\)/);
+  assert.match(page, /\[loading,setLoading\]=useState\(false\)/);
+  assert.match(page, /onError=\{event=>\{event\.currentTarget\.onerror=null/);
   assert.match(page, /Keep built-in preview catalog visible if the supplier API is unavailable/);
   assert.match(page, /if\(live\.length>0\)setProducts\(live\)/);
   assert.match(collections, /useState<Product\[]>\(FALLBACK_PRODUCTS\)/);
+  assert.match(collections, /\[loading,setLoading\]=useState\(false\)/);
+  assert.match(collections, /onError=\{event=>\{event\.currentTarget\.onerror=null/);
   assert.match(collections, /Keep the built-in preview catalog visible if supplier sync fails/);
   assert.match(collections, /if\(live\.length>0\)setProducts\(live\)/);
   assert.match(fallback, /preview-women-dress/);
@@ -127,4 +131,5 @@ test("preview product detail pages can resolve built-in products without supplie
   assert.match(detail, /import \{ FALLBACK_PRODUCTS \} from "\.\.\/\.\.\/lib\/fallback-catalog"/);
   assert.match(detail, /FALLBACK_PRODUCTS\.find/);
   assert.match(detail, /setProduct\(fallback\)/);
+  assert.match(detail, /onError=\{event=>\{event\.currentTarget\.onerror=null/);
 });
