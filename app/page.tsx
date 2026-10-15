@@ -30,6 +30,7 @@ const categoryTitle=(key:string)=>key==="DAMEN"?t.women:key==="HERREN"?t.men:key
 const categorySub=(key:string)=>key==="DAMEN"?t.subWomen:key==="HERREN"?t.subMen:key==="SCHMUCK & UHREN"?t.subJewelry:key==="BEAUTY"?t.subBeauty:key==="ACCESSOIRES"?t.subAccessories:key==="LIFESTYLE"?t.subLifestyle:key;
 useEffect(()=>{let active=true;fetch("/api/catalog?limit=1500",{cache:"no-store"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{if(active)setProducts(Array.isArray(d.products)?d.products:[])}).catch(()=>{if(active)setProducts([])}).finally(()=>{if(active)setLoading(false)});return()=>{active=false}},[]);
 useEffect(()=>{document.documentElement.lang=lang.toLowerCase();document.documentElement.dir=rtl?"rtl":"ltr";},[lang,rtl]);
+useEffect(()=>{const onKeyDown=(event:KeyboardEvent)=>{if(event.key==="Escape"){setPanel(null);setSearchOpen(false);setMenu(false)}};window.addEventListener("keydown",onKeyDown);return()=>window.removeEventListener("keydown",onKeyDown)},[]);
 const shown=useMemo(()=>products.filter(p=>(p.name+" "+(p.brand||"")+" "+(p.category||"")).toLowerCase().includes(query.toLowerCase())&&(category==="ALL"||(p.category||"").toUpperCase()===category)),[products,query,category]);
 const money=(p:Product)=>new Intl.NumberFormat(lang.toLowerCase(),{style:"currency",currency:p.currency||"EUR"}).format(p.price);
 const go=(c="ALL")=>{setCategory(c);document.getElementById("catalog")?.scrollIntoView({behavior:"smooth"});setMenu(false)};
