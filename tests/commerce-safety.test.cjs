@@ -95,23 +95,36 @@ test("catalog provides German locale EUR display labels for live and simulated p
   assert.match(catalog, /luxuryTag: "simulated"/);
 });
 
-test("storefront never starts empty when supplier credentials or API are unavailable", () => {
+test("storefront and collection pages keep a built-in EUR catalog when supplier sync fails", () => {
   const page = read("app/page.tsx");
-  assert.match(page, /const FALLBACK_PRODUCTS: Product\[\] = \[/);
-  assert.match(page, /preview-women-dress/);
-  assert.match(page, /preview-men-jacket/);
-  assert.match(page, /preview-perfume/);
+  const collections = read("app/collections/[slug]/page.tsx");
+  const fallback = read("lib/fallback-catalog.ts");
+  assert.match(page, /import \{ FALLBACK_PRODUCTS \} from "\.\.\/lib\/fallback-catalog"/);
   assert.match(page, /useState<Product\[]>\(FALLBACK_PRODUCTS\)/);
   assert.match(page, /Keep built-in preview catalog visible if the supplier API is unavailable/);
   assert.match(page, /if\(live\.length>0\)setProducts\(live\)/);
-  assert.match(page, /images\.unsplash\.com/);
-  assert.match(page, /currency:"EUR"/);
+  assert.match(collections, /useState<Product\[]>\(FALLBACK_PRODUCTS\)/);
+  assert.match(collections, /Keep the built-in preview catalog visible if supplier sync fails/);
+  assert.match(collections, /if\(live\.length>0\)setProducts\(live\)/);
+  assert.match(fallback, /preview-women-dress/);
+  assert.match(fallback, /preview-men-jacket/);
+  assert.match(fallback, /preview-perfume/);
+  assert.match(fallback, /images\.unsplash\.com/);
+  assert.match(fallback, /currency: "EUR"/);
 });
 
-test("fallback preview products cannot be mistaken for available inventory", () => {
+test("fallback preview products are clearly simulated and never treated as in-stock", () => {
+  const fallback = read("lib/fallback-catalog.ts");
   const page = read("app/page.tsx");
-  assert.match(page, /brand:"NEXORA Preview"/);
-  assert.match(page, /luxuryTag:"simulated"/);
-  assert.match(page, /available:null/);
+  assert.match(fallback, /brand: "NEXORA Preview"/);
+  assert.match(fallback, /luxuryTag: "simulated"/);
+  assert.match(fallback, /available: null/);
   assert.match(page, /p\.available!==true/);
+});
+
+test("preview product detail pages can resolve built-in products without supplier access", () => {
+  const detail = read("app/products/[id]/page.tsx");
+  assert.match(detail, /import \{ FALLBACK_PRODUCTS \} from "\.\.\/\.\.\/lib\/fallback-catalog"/);
+  assert.match(detail, /FALLBACK_PRODUCTS\.find/);
+  assert.match(detail, /setProduct\(fallback\)/);
 });
