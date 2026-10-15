@@ -22,5 +22,7 @@ jobs:
           node-version: 20
       - name: Install dependencies
         run: npm install
+      - name: Run commerce safety contract tests
+        run: npm test
       - name: Build Next.js application
         run: npm run build
