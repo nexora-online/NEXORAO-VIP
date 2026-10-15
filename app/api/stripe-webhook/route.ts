@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     const supplierUrl = process.env.SUPPLIER_ORDER_FULFILLMENT_URL;
     const supplierToken = process.env.SUPPLIER_ORDER_FULFILLMENT_TOKEN;
     const stripeSecret = process.env.STRIPE_SECRET_KEY;
-    if (process.env.COMMERCE_RELEASE_APPROVED === "true" && supplierUrl && supplierToken && stripeSecret && typeof session.id === "string") {
+    if (process.env.CHECKOUT_ENABLED === "true" && process.env.COMMERCE_RELEASE_APPROVED === "true" && supplierUrl && supplierToken && stripeSecret && typeof session.id === "string") {
       let endpoint: URL;
       try { endpoint = new URL(supplierUrl); if (endpoint.protocol !== "https:") throw new Error(); }
       catch { return NextResponse.json({ error: "Supplier fulfillment endpoint must use HTTPS." }, { status: 500 }); }
