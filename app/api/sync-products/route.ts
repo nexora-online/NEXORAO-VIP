@@ -9,7 +9,7 @@ export const maxDuration = 60;
 type StoreCategory = "DAMEN" | "HERREN" | "SCHMUCK & UHREN" | "BEAUTY" | "ACCESSOIRES" | "LIFESTYLE";
 type StoreProduct = {
   id: string;
-  sku: string;
+  sku?: string;
   name: string;
   brand: string;
   category: StoreCategory;
@@ -44,7 +44,7 @@ const amount = (value: unknown): number | null => {
 function classifyProduct(value: Record<string, unknown>, fallback: StoreCategory): StoreProduct | null {
   const id = text(value.product_id ?? value.productId ?? value.id);
   const name = text(value.product_title ?? value.productTitle ?? value.title ?? value.name);
-  const imageUrl = safeHttps(value.product_main_image_url ?? value.productMainImageUrl ?? value.imageUrl ?? value.image);
+  const smallImages = value.product_small_image_urls ?? value.productSmallImageUrls ?? value.small_images ?? value.images;\n  const imageList = Array.isArray(smallImages) ? smallImages : typeof smallImages === "string" ? smallImages.split(",") : [];\n  const imageUrl = safeHttps(value.product_main_image_url ?? value.productMainImageUrl ?? value.imageUrl ?? value.image) || imageList.map(safeHttps).find(Boolean) || "";
   const price = amount(value.target_sale_price ?? value.targetSalePrice ?? value.app_sale_price ?? value.sale_price ?? value.price);
   const productUrl = safeHttps(value.product_detail_url ?? value.productDetailUrl ?? value.promotion_link ?? value.product_url);
   if (!id || !name || !imageUrl || price === null) return null;
@@ -66,7 +66,7 @@ function classifyProduct(value: Record<string, unknown>, fallback: StoreCategory
   // Do not fabricate either: preserve product ID as the stable catalog key and mark inventory unknown.
   return {
     id,
-    sku: text(value.sku ?? value.sku_id ?? value.skuId) || id,
+    ...(text(value.sku ?? value.sku_id ?? value.skuId) ? { sku: text(value.sku ?? value.sku_id ?? value.skuId) } : {}),
     name,
     brand: text(value.shop_name ?? value.shopName ?? value.brand) || "AliExpress",
     category,
