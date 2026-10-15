@@ -14,6 +14,8 @@ type StoreProduct = {
   brand: string;
   category: StoreCategory;
   price: number;
+  originalPrice?: number;
+  discountPercent?: number;
   currency: string;
   imageUrl: string;
   productUrl: string;
@@ -55,6 +57,7 @@ function classifyProduct(value: Record<string, unknown>, fallback: StoreCategory
   const imageList = Array.isArray(smallImages) ? smallImages : typeof smallImages === "string" ? smallImages.split(",") : [];
   const imageUrl = safeHttps(value.product_main_image_url ?? value.productMainImageUrl ?? value.imageUrl ?? value.image) || imageList.map(safeHttps).find(Boolean) || "";
   const price = amount(value.target_sale_price ?? value.targetSalePrice ?? value.app_sale_price ?? value.sale_price ?? value.price);
+  const originalPrice = amount(value.target_original_price ?? value.targetOriginalPrice ?? value.original_price ?? value.originalPrice ?? value.retail_price);
   const productUrl = safeHttps(value.product_detail_url ?? value.productDetailUrl ?? value.promotion_link ?? value.product_url);
   if (!id || !name || !imageUrl || price === null) return null;
 
@@ -80,6 +83,7 @@ function classifyProduct(value: Record<string, unknown>, fallback: StoreCategory
     brand: text(value.shop_name ?? value.shopName ?? value.brand) || "AliExpress",
     category,
     price,
+    ...(originalPrice !== null && price !== null && originalPrice > price ? { originalPrice, discountPercent: Math.round((1 - price / originalPrice) * 100) } : {}),
     currency: text(value.target_sale_price_currency ?? value.targetSalePriceCurrency ?? value.target_currency ?? value.targetCurrency) || "EUR",
     imageUrl,
     productUrl,
@@ -101,7 +105,7 @@ function collectProductObjects(input: unknown, out: Record<string, unknown>[] = 
 }
 function signRequest(params: Record<string, string>, secret: string): string {
   const sorted = Object.keys(params).filter(key => key !== "sign").sort();
-  const payload = "/rest" + sorted.map(key => key + params[key]).join("");
+  const payload = sorted.map(key => key + params[key]).join("");
   return createHmac("sha256", secret).update(payload, "utf8").digest("hex").toUpperCase();
 }
 async function searchGroup(group: SearchGroup, appKey: string, appSecret: string, country: string, currency: string, language: string): Promise<StoreProduct[]> {
@@ -122,7 +126,7 @@ async function searchGroup(group: SearchGroup, appKey: string, appSecret: string
     fields: "product_id,product_title,product_main_image_url,target_sale_price,target_sale_price_currency,target_original_price,product_detail_url,first_level_category_name,second_level_category_name,shop_name,product_small_image_urls,product_video_url,evaluate_rate,lastest_volume",
   };
   params.sign = signRequest(params, appSecret);
-  const response = await fetch("https://api-sg.aliexpress.com/rest", {
+  const response = await fetch("https://api-sg.aliexpress.com/sync", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8", Accept: "application/json" },
     body: new URLSearchParams(params).toString(),
