@@ -61,7 +61,7 @@ test("catalog validates live EUR products and never fabricates SKU-level invento
   assert.match(catalog, /!productUrl/);
   assert.match(catalog, /available: null/);
   assert.match(catalog, /inventoryStatus: "unknown"/);
-  assert.match(catalog, /luxuryTag: "curated"/);
+  assert.match(catalog, /luxuryTag: "unverified"/);
 });
 
 test("catalog has explicit simulation fallback and durable Blob persistence", () => {
