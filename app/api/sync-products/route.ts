@@ -135,7 +135,7 @@ async function searchGroup(group: SearchGroup, appKey: string, appSecret: string
       headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8", Accept: "application/json" },
       body: new URLSearchParams(params).toString(),
       cache: "no-store",
-      signal: AbortSignal.timeout(18000),
+      signal: AbortSignal.timeout(12000),
     });
     if (!response.ok) throw new Error("AliExpress API returned HTTP " + response.status);
     const data: unknown = await response.json();
