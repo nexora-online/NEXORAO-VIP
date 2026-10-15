@@ -168,6 +168,9 @@ export async function GET(request: Request) {
   const country = (requestUrl.searchParams.get("country") || "DE").toUpperCase().slice(0, 2);
   const currency = (requestUrl.searchParams.get("currency") || "EUR").toUpperCase().slice(0, 3);
   const language = (requestUrl.searchParams.get("language") || "DE").toUpperCase().slice(0, 2);
+  if (country !== "DE" || currency !== "EUR" || language !== "DE") {
+    return NextResponse.json({ products: [], count: 0, configured: true, error: "Catalog import currently supports the verified Germany/EUR/German query only." }, { status: 400, headers: { "Cache-Control": "no-store" } });
+  }
   const cacheKey = [appKey, country, currency, language].join(":");
   if (cachedCatalog && cachedCatalog.key === cacheKey && cachedCatalog.expiresAt > Date.now()) {
     return NextResponse.json(cachedCatalog.body, { headers: { "Cache-Control": "public, s-maxage=600, stale-while-revalidate=3600" } });
