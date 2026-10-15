@@ -78,3 +78,19 @@ test("catalog limits stored items and labels inventory as unverified", () => {
   assert.match(catalog, /Stock is unknown until a stock-capable supplier API verifies it/);
   assert.match(catalog, /Catalog fetched but not durably saved/);
 });
+
+test("environment template keeps payments locked and documents persistent catalog credentials", () => {
+  const envExample = read(".env.example");
+  assert.match(envExample, /^BLOB_READ_WRITE_TOKEN=$/m);
+  assert.match(envExample, /^ALIEXPRESS_APP_KEY=$/m);
+  assert.match(envExample, /^ALIEXPRESS_APP_SECRET=$/m);
+  assert.match(envExample, /^CHECKOUT_ENABLED=false$/m);
+  assert.match(envExample, /^COMMERCE_RELEASE_APPROVED=false$/m);
+  assert.doesNotMatch(envExample, /sk_live_[A-Za-z0-9]+|whsec_[A-Za-z0-9]+/);
+});
+
+test("catalog provides German locale EUR display labels for live and simulated products", () => {
+  assert.match(catalog, /displayPrice: new Intl\.NumberFormat\("de-DE", \{ style: "currency", currency: "EUR" \}\)\.format\(price\)/);
+  assert.match(catalog, /SIMULATION ONLY/);
+  assert.match(catalog, /luxuryTag: "simulated"/);
+});
