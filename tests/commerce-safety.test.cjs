@@ -94,3 +94,24 @@ test("catalog provides German locale EUR display labels for live and simulated p
   assert.match(catalog, /SIMULATION ONLY/);
   assert.match(catalog, /luxuryTag: "simulated"/);
 });
+
+test("storefront never starts empty when supplier credentials or API are unavailable", () => {
+  const page = read("app/page.tsx");
+  assert.match(page, /const FALLBACK_PRODUCTS: Product\[\] = \[/);
+  assert.match(page, /preview-women-dress/);
+  assert.match(page, /preview-men-jacket/);
+  assert.match(page, /preview-perfume/);
+  assert.match(page, /useState<Product\[]>\(FALLBACK_PRODUCTS\)/);
+  assert.match(page, /Keep built-in preview catalog visible if the supplier API is unavailable/);
+  assert.match(page, /if\(live\.length>0\)setProducts\(live\)/);
+  assert.match(page, /images\.unsplash\.com/);
+  assert.match(page, /currency:"EUR"/);
+});
+
+test("fallback preview products cannot be mistaken for available inventory", () => {
+  const page = read("app/page.tsx");
+  assert.match(page, /brand:"NEXORA Preview"/);
+  assert.match(page, /luxuryTag:"simulated"/);
+  assert.match(page, /available:null/);
+  assert.match(page, /p\.available!==true/);
+});
