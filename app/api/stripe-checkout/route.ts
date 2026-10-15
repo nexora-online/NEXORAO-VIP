@@ -46,8 +46,8 @@ export async function POST(request: Request) {
   const selected: { product: StoreProduct; quantity: number }[] = [];
   for (const [id, quantity] of quantities) {
     const product = byId.get(id);
-    if (!product || !Number.isFinite(product.price) || product.price <= 0 || !/^[A-Z]{3}$/.test(product.currency || "") || product.currency.toLowerCase() !== "eur" || product.available === false) {
-      return NextResponse.json({ error: "A cart item is no longer available or its EUR price could not be verified. Refresh the catalog and try again.", productId: id }, { status: 409 });
+    if (!product || !Number.isFinite(product.price) || product.price <= 0 || !/^[A-Z]{3}$/.test(product.currency || "") || product.currency.toLowerCase() !== "eur" || product.available !== true) {
+      return NextResponse.json({ error: "A cart item does not have verified live inventory or a valid EUR price. No payment was created. Refresh the catalog or try again when supplier stock is confirmed.", productId: id }, { status: 409 });
     }
     selected.push({ product, quantity });
   }
