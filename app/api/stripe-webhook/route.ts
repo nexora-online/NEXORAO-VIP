@@ -38,13 +38,14 @@ export async function POST(request: Request) {
       let endpoint: URL;
       try { endpoint = new URL(supplierUrl); if (endpoint.protocol !== "https:") throw new Error(); }
       catch { return NextResponse.json({ error: "Supplier fulfillment endpoint must use HTTPS." }, { status: 500 }); }
-      let lineItems: StripeLineItems | null = null;
+      let lines: NonNullable<StripeLineItems["data"]> = [];
       try {
         const itemsResponse = await fetch("https://api.stripe.com/v1/checkout/sessions/" + encodeURIComponent(session.id) + "/line_items?limit=100", {
           headers: { Authorization: "Bearer " + stripeSecret, Accept: "application/json" }, cache: "no-store", signal: AbortSignal.timeout(12000),
         });
         if (!itemsResponse.ok) return NextResponse.json({ error: "Payment verified but Stripe line items could not be retrieved; manual fulfillment required." }, { status: 502 });
-        lineItems = await itemsResponse.json() as StripeLineItems;
+        const lineItemsPayload = await itemsResponse.json() as StripeLineItems;
+        lines = Array.isArray(lineItemsPayload.data) ? lineItemsPayload.data : [];
       } catch {
         return NextResponse.json({ error: "Payment verified but Stripe line items are temporarily unavailable; manual fulfillment required." }, { status: 502 });
       }
@@ -53,7 +54,6 @@ export async function POST(request: Request) {
       if (!shipping?.address?.line1 || !shipping.address.city || !shipping.address.postal_code || !shipping.address.country || !shipping.name) {
         return NextResponse.json({ error: "Payment verified but complete shipping details are missing; manual fulfillment required." }, { status: 502 });
       }
-      const lines = Array.isArray(lineItems?.data) ? lineItems.data : [];
       if (!lines.length || lines.length !== productIds.length || lines.some(line => !Number.isInteger(line.quantity) || (line.quantity || 0) < 1 || (line.amount_total || 0) < 0 || line.currency?.toLowerCase() !== "eur")) {
         return NextResponse.json({ error: "Payment verified but order lines failed validation; manual fulfillment required." }, { status: 502 });
       }
