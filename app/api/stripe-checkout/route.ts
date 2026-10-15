@@ -8,8 +8,13 @@ const safeText = (v: unknown, max = 180) => typeof v === "string" ? v.trim().sli
 const euroAmount = (n: number) => Math.round(n * 100);
 
 export async function POST(request: Request) {
-  if (process.env.CHECKOUT_ENABLED !== "true") {
-    return NextResponse.json({ error: "Checkout is not enabled for live orders yet. Complete legal and fulfillment setup, then set CHECKOUT_ENABLED=true in Vercel." }, { status: 503 });
+  const supplierUrl = process.env.SUPPLIER_ORDER_FULFILLMENT_URL;
+  const supplierToken = process.env.SUPPLIER_ORDER_FULFILLMENT_TOKEN;
+  if (process.env.CHECKOUT_ENABLED !== "true" || process.env.COMMERCE_RELEASE_APPROVED !== "true" || !supplierUrl || !supplierToken) {
+    return NextResponse.json({ error: "Live checkout is safely disabled until release approval and a verified supplier order adapter are configured. No payment was created." }, { status: 503, headers: { "Cache-Control": "no-store" } });
+  }
+  try { const endpoint = new URL(supplierUrl); if (endpoint.protocol !== "https:") throw new Error(); } catch {
+    return NextResponse.json({ error: "The configured supplier order adapter must use HTTPS. No payment was created." }, { status: 503 });
   }
   const secret = process.env.STRIPE_SECRET_KEY;
   if (!secret) return NextResponse.json({ error: "Stripe is not configured on the server." }, { status: 503 });
