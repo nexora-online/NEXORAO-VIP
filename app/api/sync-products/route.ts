@@ -170,7 +170,7 @@ export async function GET(request: Request) {
   const language = (requestUrl.searchParams.get("language") || "DE").toUpperCase().slice(0, 2);
   const cacheKey = [appKey, country, currency, language].join(":");
   if (cachedCatalog && cachedCatalog.key === cacheKey && cachedCatalog.expiresAt > Date.now()) {
-    return NextResponse.json(cachedCatalog.body, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json(cachedCatalog.body, { headers: { "Cache-Control": "public, s-maxage=600, stale-while-revalidate=3600" } });
   }
   try {
     const results = await Promise.allSettled(SEARCH_GROUPS.map(group => searchGroup(group, appKey, appSecret, country, currency, language)));
@@ -195,7 +195,7 @@ export async function GET(request: Request) {
       partial: errors.length > 0, failedCategories: errors,
     };
     cachedCatalog = { key: cacheKey, expiresAt: Date.now() + 10 * 60 * 1000, body };
-    return NextResponse.json(body, { headers: { "Cache-Control": "no-store, max-age=0" } });
+    return NextResponse.json(body, { headers: { "Cache-Control": "public, s-maxage=600, stale-while-revalidate=3600" } });
   } catch {
     return NextResponse.json({
       products: [], count: 0, configured: true, supplier: "AliExpress",
