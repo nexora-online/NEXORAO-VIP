@@ -1,5 +1,0 @@
-import { NextResponse } from "next/server";
-import { safeTokenMatch } from "@/lib/security/constant-time";
-import { fetchSupplierFeed } from "@/lib/suppliers/feed-client";
-export const dynamic="force-dynamic";
-export async function POST(request:Request){if(!safeTokenMatch(process.env.CRON_SECRET,request.headers.get("authorization")?.replace(/^Bearer\s+/i,"") ?? null))return NextResponse.json({error:"Unauthorized"},{status:401});try{const result=await fetchSupplierFeed();return NextResponse.json({ok:true,count:result.products.length,source:result.source,fetchedAt:result.fetchedAt,warnings:result.warnings,note:"Feed fetched only; persistent storage and supplier order dispatch require credentials and database setup."},{headers:{"Cache-Control":"no-store"}});}catch(e){return NextResponse.json({ok:false,error:e instanceof Error?e.message:"Supplier sync failed"},{status:502});}}

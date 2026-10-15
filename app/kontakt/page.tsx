@@ -1,2 +1,0 @@
-import InfoPage from "../components/info-page";
-export default function Page(){return <InfoPage title="Kontakt"><p>Der Kundenservice wird vor dem Verkaufsstart eingerichtet. Bitte senden Sie über diese Vorschau keine Zahlungsdaten oder anderen vertraulichen Informationen.</p><p>Eine bestätigte Kontaktadresse und die vollständigen Anbieterangaben werden ergänzt, sobald die geschäftlichen Unterlagen und Kontaktkanäle final eingerichtet sind.</p></InfoPage>}

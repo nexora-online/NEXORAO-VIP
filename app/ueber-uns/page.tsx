@@ -1,2 +1,0 @@
-import InfoPage from "../components/info-page";
-export default function Page(){return <InfoPage title="Über NEXORA"><p>NEXORA ist als kuratierte Lifestyle-Shop-Plattform mit Fokus auf Stil, Accessoires, Beauty und ausgewählte Premium-Produkte konzipiert.</p><p>Die Website befindet sich aktuell in der Vorbereitungsphase. Sortiment, Markenverfügbarkeit und Lieferbedingungen werden erst nach Bestätigung durch die jeweiligen Partner verbindlich.</p></InfoPage>}

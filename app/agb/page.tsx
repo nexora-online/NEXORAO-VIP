@@ -1,2 +1,0 @@
-import InfoPage from "../components/info-page";
-export default function Page(){return <InfoPage title="Allgemeine Geschäftsbedingungen"><p>Die Verkaufsbedingungen sind noch nicht finalisiert. Diese Website ist derzeit eine Shop-Vorschau; es werden keine verbindlichen Bestellungen entgegengenommen und keine Zahlungen eingezogen.</p><p>Vor Beginn des Verkaufs werden die vollständigen Vertragsbedingungen einschließlich Anbieterangaben, Vertragsschluss, Preisen, Zahlung, Lieferung, Gewährleistung und Streitbeilegung ergänzt und rechtlich geprüft.</p></InfoPage>}

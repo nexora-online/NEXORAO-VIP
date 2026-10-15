@@ -1,2 +1,0 @@
-import InfoPage from "../components/info-page";
-export default function Page(){return <InfoPage title="NEXORA VIP"><p>Der VIP-Bereich ist als Zugang zu ausgewählten Kollektionen und zukünftigen Premium-Funktionen geplant.</p><p>Konten, Mitgliedschaften und kostenpflichtige VIP-Leistungen sind derzeit nicht aktiviert. Es werden keine Gebühren erhoben.</p></InfoPage>}

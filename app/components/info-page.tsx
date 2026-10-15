@@ -1,5 +1,0 @@
-import Link from "next/link";
-type Props = { title: string; children: React.ReactNode };
-export default function InfoPage({ title, children }: Props) {
- return <main style={{minHeight:"100vh",background:"#090909",color:"#f5f0e4",padding:"48px 20px",fontFamily:"Arial,sans-serif"}}><div style={{maxWidth:900,margin:"0 auto"}}><Link href="/" style={{color:"#d5b56a",letterSpacing:3,textDecoration:"none"}}>♛ NEXORA</Link><p style={{color:"#d5b56a",letterSpacing:3,fontSize:12,marginTop:48}}>EXCLUSIVE LIFESTYLE · VIP ONLY</p><h1 style={{fontFamily:"Georgia,serif",fontWeight:400,fontSize:"clamp(32px,6vw,52px)",margin:"12px 0 28px"}}>{title}</h1><div style={{borderTop:"1px solid #9d8047",paddingTop:24,lineHeight:1.8,color:"#ddd5c4"}}>{children}</div><p style={{marginTop:48,borderTop:"1px solid #9d8047",paddingTop:20}}><Link href="/" style={{color:"#d5b56a"}}>← Zurück zum Shop</Link></p></div></main>;
-}
