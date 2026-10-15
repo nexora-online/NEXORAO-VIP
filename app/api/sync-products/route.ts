@@ -77,7 +77,7 @@ function classifyProduct(value: Record<string, unknown>, fallback: StoreCategory
     brand: text(value.shop_name ?? value.shopName ?? value.brand) || "AliExpress",
     category,
     price,
-    currency: text(value.target_currency ?? value.targetCurrency) || "EUR",
+    currency: text(value.target_sale_price_currency ?? value.targetSalePriceCurrency ?? value.target_currency ?? value.targetCurrency) || "EUR",
     imageUrl,
     productUrl,
     available: null,
@@ -116,7 +116,7 @@ async function searchGroup(group: SearchGroup, appKey: string, appSecret: string
     target_language: language,
     ship_to_country: country,
     sort: "SALE_PRICE_ASC",
-    fields: "product_id,product_title,product_main_image_url,target_sale_price,target_original_price,product_detail_url,first_level_category_name,second_level_category_name,shop_name,product_small_image_urls,product_video_url,evaluate_rate,lastest_volume",
+    fields: "product_id,product_title,product_main_image_url,target_sale_price,target_sale_price_currency,target_original_price,product_detail_url,first_level_category_name,second_level_category_name,shop_name,product_small_image_urls,product_video_url,evaluate_rate,lastest_volume",
   };
   params.sign = signRequest(params, appSecret);
   const response = await fetch("https://api-sg.aliexpress.com/rest", {
