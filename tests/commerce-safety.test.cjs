@@ -27,7 +27,8 @@ test("webhook requires a valid recent HMAC signature and paid session", () => {
   assert.match(webhook, /STRIPE_WEBHOOK_SECRET/);
   assert.match(webhook, /createHmac\("sha256"/);
   assert.match(webhook, /timingSafeEqual/);
-  assert.match(webhook, /Date\.now\(\) \/ 1000 - Number\(timestamp\) > 300/);
+  assert.match(webhook, /Math\.abs\(/);
+  assert.match(webhook, /> 300/);
   assert.match(webhook, /session\.payment_status !== "paid"/);
 });
 
@@ -40,8 +41,9 @@ test("supplier fulfillment remains behind both release gates and HTTPS validatio
 
 test("simulation route is opt-in, authenticated, and has no external side effects", () => {
   assert.match(simulation, /COMMERCE_SIMULATION_ENABLED !== "true"/);
-  assert.match(simulation, /Bearer\\s\+/);
+  assert.match(simulation, /authorization/);
   assert.match(simulation, /CRON_SECRET/);
+  assert.match(simulation, /timingSafeEqual/);
   assert.match(simulation, /externalSideEffects: false/);
   assert.match(simulation, /mode: "dry_run"/);
 });
