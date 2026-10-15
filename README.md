@@ -1,37 +1,20 @@
 # NEXORAO-VIP
 
-Premium black-and-gold storefront for the NEXORA VIP concept.
+Premium responsive black-and-gold storefront for the NEXORA VIP concept, built with Next.js.
 
-## Supplier catalog connection
+## Catalog connection
 
-The storefront requests `/api/catalog?limit=1000` and displays valid products returned by the catalog endpoint. The endpoint intentionally returns an empty catalog until a supplier feed is configured; it does not invent supplier products.
+The storefront requests `/api/catalog?limit=1500`. The catalog endpoint intentionally returns an empty catalog until a real supplier feed is configured; it does not invent products.
 
-Configure these environment variables in the hosting project:
+Configure these hosting environment variables when an actual supplier feed is available:
 
 - `SUPPLIER_CATALOG_URL`: HTTPS URL of the supplier's product feed.
-- `SUPPLIER_CATALOG_TOKEN`: optional bearer token, if the supplier requires one.
+- `SUPPLIER_CATALOG_TOKEN`: optional bearer token, if required by that supplier.
+- `NEXT_PUBLIC_SITE_URL`: optional canonical site URL for the hourly catalog check.
+- `CRON_SECRET`: optional secret to protect the catalog cron endpoint.
 
-The feed must return either a JSON array or an object with a `products` array. Each product should contain:
+The feed must return a JSON array or an object with a `products` array. Each product needs a stable `id`, `name`, numeric `price`, and HTTPS image URL (`imageUrl` or `image`). Optional fields include `brand`, `category`, `currency`, and `available`. Products marked unavailable are not displayed. The endpoint validates product data and caps the response at 1,500 items. Supplier APIs may need a dedicated adapter before they can be used.
 
-```json
-{
-  "products": [
-    {
-      "id": "supplier-item-123",
-      "name": "Product name",
-      "brand": "Brand",
-      "category": "ACCESSOIRES",
-      "price": 29.95,
-      "currency": "EUR",
-      "imageUrl": "https://supplier.example/product-image.jpg",
-      "available": true
-    }
-  ]
-}
-```
+## Preview and payments
 
-Products are validated before display and the import is capped at 1,000 items. Images may be supplied as `imageUrl` or `image`; the feed must provide a stable product ID, name, numeric price and image URL. Only configure a feed URL and token supplied by the actual supplier. Different supplier APIs may require a dedicated adapter before they can be used.
-
-## Payments and launch
-
-Checkout is currently a preview only and does not create orders or collect money. Real payments require the selected payment provider's credentials, verified business details, order handling, shipping/tax configuration, and reviewed legal pages before live launch.
+The current storefront is a preview: cart and wishlist controls are local interface interactions only. Checkout does not create orders or collect money. Real payments require the selected payment provider's credentials, verified business details, order handling, shipping/tax configuration, and reviewed legal pages before live launch.
