@@ -18,7 +18,7 @@ The generic feed must return a JSON array or an object with a `products` array. 
 
 ## Commerce readiness and payments
 
-The storefront now includes a browser-persisted cart, product detail and collection pages, a Stripe Checkout session route, a signed Stripe webhook, and a payment-status page. Live checkout remains intentionally blocked unless `CHECKOUT_ENABLED=true`. This release gate must remain disabled until the real supplier order-placement adapter, shipping/tax/returns rules, and legally reviewed business disclosures are complete. A Stripe key in Vercel alone does not make order fulfillment production-ready.
+The storefront now includes a browser-persisted cart, product detail and collection pages, a Stripe Checkout session route, a signed Stripe webhook, and a payment-status page. Live checkout remains intentionally blocked unless both `CHECKOUT_ENABLED=true` and `COMMERCE_RELEASE_APPROVED=true` are set and a verified HTTPS supplier adapter URL/token is configured. These release gates must remain disabled until the real supplier order-placement adapter, shipping/tax/returns rules, and legally reviewed business disclosures are complete. A Stripe key in Vercel alone does not make order fulfillment production-ready.
 
 ## AliExpress Open Platform product sync
 
@@ -43,9 +43,9 @@ The app must be approved for `aliexpress.affiliate.product.query` access. A succ
 
 - `STRIPE_SECRET_KEY`: server-only Stripe secret key.
 - `STRIPE_WEBHOOK_SECRET`: signing secret for the `/api/stripe-webhook` endpoint.
-- `CHECKOUT_ENABLED=true`: explicit release gate; checkout returns HTTP 503 unless this is enabled.
+- `CHECKOUT_ENABLED=true` and `COMMERCE_RELEASE_APPROVED=true`: explicit release gates; checkout returns HTTP 503 unless both are enabled and a verified HTTPS fulfillment adapter is configured.
 - `SUPPLIER_ORDER_FULFILLMENT_URL` and `SUPPLIER_ORDER_FULFILLMENT_TOKEN`: optional HTTPS adapter that receives a verified paid checkout event. Requests include an idempotency key based on the Stripe event ID.
 
-The webhook verifies Stripe signatures and only forwards orders after a paid checkout event. **The configured adapter is not an AliExpress order-placement implementation by itself.** The AliExpress affiliate product-query API provides product discovery; it does not, by itself, establish authorized checkout, SKU-level inventory reservation, supplier order creation, or shipment tracking. Do not set `CHECKOUT_ENABLED=true` until a real supplier order adapter is implemented and tested end-to-end, the fulfillment provider's API permissions are confirmed, shipping/tax/returns rules are set, and the legal pages have been reviewed. Without the fulfillment URL/token, a paid order is logged for manual handling and is not automatically sent to a supplier.
+The webhook verifies Stripe signatures, retrieves the exact Stripe line items, checks quantities/currency and required shipping fields, and only forwards orders after a paid checkout event and explicit `COMMERCE_RELEASE_APPROVED=true`. **The configured adapter is not an AliExpress order-placement implementation by itself.** The AliExpress affiliate product-query API provides product discovery; it does not, by itself, establish authorized checkout, SKU-level inventory reservation, supplier order creation, or shipment tracking. Do not set `CHECKOUT_ENABLED=true` until a real supplier order adapter is implemented and tested end-to-end, the fulfillment provider's API permissions are confirmed, shipping/tax/returns rules are set, and the legal pages have been reviewed. Without the fulfillment URL/token, a paid order is logged for manual handling and is not automatically sent to a supplier.
 
 Never commit secret values or expose them with a `NEXT_PUBLIC_` prefix. After changing Vercel environment variables, redeploy the intended environment. A successful build confirms compilation only; it does not prove API credentials, live Stripe configuration, supplier access, or fulfillment.
