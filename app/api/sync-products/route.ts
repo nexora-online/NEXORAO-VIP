@@ -89,39 +89,83 @@ function collectProductObjects(input: unknown, out: Record<string, unknown>[] = 
   return out;
 }
 function signRequest(params: Record<string, string>, secret: string): string {
+  // AliExpress TOP/DS APIs use HMAC-MD5 when sign_method=hmac.
   const payload = Object.keys(params).filter(key => key !== "sign").sort().map(key => key + params[key]).join("");
-  return createHmac("sha256", secret).update(payload, "utf8").digest("hex").toUpperCase();
+  return createHmac("md5", secret).update(payload, "utf8").digest("hex").toUpperCase();
 }
-async function searchGroup(group: SearchGroup, appKey: string, appSecret: string): Promise<StoreProduct[]> {
+function topTimestamp(): string {
+  // TOP timestamps use China Standard Time (UTC+08:00), formatted as yyyy-MM-dd HH:mm:ss.
+  const date = new Date(Date.now() + 8 * 60 * 60 * 1000);
+  return date.toISOString().slice(0, 19).replace("T", " ");
+}
+function collectDsProducts(input: unknown): Record<string, unknown>[] {
+  const found = collectProductObjects(input);
+  if (found.length) return found;
+  const out: Record<string, unknown>[] = [];
+  const visit = (value: unknown, depth = 0) => {
+    if (depth > 12 || value == null) return;
+    if (Array.isArray(value)) { for (const item of value) visit(item, depth + 1); return; }
+    if (typeof value !== "object") return;
+    const obj = value as Record<string, unknown>;
+    if ((obj.product_id != null || obj.productId != null || obj.item_id != null) &&
+        (obj.product_title != null || obj.productTitle != null || obj.title != null || obj.product_name != null)) out.push(obj);
+    for (const nested of Object.values(obj)) if (nested && typeof nested === "object") visit(nested, depth + 1);
+  };
+  visit(input);
+  return out;
+}
+async function searchGroup(group: SearchGroup, appKey: string, appSecret: string, session: string): Promise<StoreProduct[]> {
   const unique = new Map<string, StoreProduct>();
-  for (let page = 1; page <= 4; page++) {
+  for (let page = 1; page <= 2; page++) {
     const params: Record<string, string> = {
-      app_key: appKey, method: "aliexpress.affiliate.product.query", timestamp: String(Date.now()),
-      sign_method: "sha256", format: "json", v: "2.0", keywords: group.keywords,
-      page_no: String(page), page_size: "50", target_currency: "EUR", target_language: "DE",
-      ship_to_country: "DE", sort: "LAST_VOLUME_DESC",
-      fields: "product_id,product_title,product_main_image_url,target_sale_price,target_sale_price_currency,target_original_price,product_detail_url,first_level_category_name,second_level_category_name,shop_name,product_small_image_urls,product_video_url,evaluate_rate,lastest_volume",
+      app_key: appKey,
+      method: "aliexpress.ds.recommend.feed.get",
+      timestamp: topTimestamp(),
+      sign_method: "hmac",
+      format: "json",
+      v: "2.0",
+      session,
+      country: "DE",
+      target_currency: "EUR",
+      target_language: "DE",
+      page_no: String(page),
+      page_size: "50",
+      sort: "priceAsc",
+      feed_name: "DS bestseller",
     };
     params.sign = signRequest(params, appSecret);
-    const response = await fetch("https://api-sg.aliexpress.com/sync", {
-      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8", Accept: "application/json" },
-      body: new URLSearchParams(params).toString(), cache: "no-store", signal: AbortSignal.timeout(8000),
+    const response = await fetch("https://eco.taobao.com/router/rest", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=utf-8", Accept: "application/json" },
+      body: new URLSearchParams(params).toString(),
+      cache: "no-store",
+      signal: AbortSignal.timeout(12000),
     });
     const responseText = await response.text();
     let data: unknown;
     try { data = JSON.parse(responseText); } catch { data = null; }
-    if (!response.ok) throw new Error("AliExpress HTTP " + response.status + (response.statusText ? " " + response.statusText : ""));
-    if (!data || typeof data !== "object") throw new Error("AliExpress returned non-JSON or invalid response (HTTP " + response.status + ")");
+    if (!response.ok) throw new Error("AliExpress DS HTTP " + response.status);
+    if (!data || typeof data !== "object") throw new Error("AliExpress DS returned non-JSON response");
     const root = data as Record<string, unknown>;
-    const error = (root.error_response && typeof root.error_response === "object" ? root.error_response : root.error && typeof root.error === "object" ? root.error : null) as Record<string, unknown> | null;
-    if (error || (root.code != null && Number(root.code) >= 400)) {
-      const code = text(error?.code ?? error?.sub_code ?? root.code);
-      const message = text(error?.msg ?? error?.message ?? error?.sub_msg ?? root.message);
-      throw new Error("AliExpress API error" + (code ? " [" + code.slice(0, 80) + "]" : "") + (message ? ": " + message.slice(0, 240) : ""));
+    const error = (root.error_response && typeof root.error_response === "object" ? root.error_response : null) as Record<string, unknown> | null;
+    if (error) {
+      const code = text(error.code ?? error.sub_code);
+      const message = text(error.msg ?? error.message ?? error.sub_msg);
+      throw new Error("AliExpress DS API error" + (code ? " [" + code.slice(0, 80) + "]" : "") + (message ? ": " + message.slice(0, 220) : ""));
     }
-    const candidates = collectProductObjects(data);
+    const candidates = collectDsProducts(data);
     for (const candidate of candidates) {
-      const product = classifyProduct(candidate, group.category);
+      const normalized: Record<string, unknown> = {
+        ...candidate,
+        product_id: candidate.product_id ?? candidate.productId ?? candidate.item_id,
+        product_title: candidate.product_title ?? candidate.productTitle ?? candidate.product_name ?? candidate.title,
+        product_main_image_url: candidate.product_main_image_url ?? candidate.productMainImageUrl ?? candidate.product_main_image ?? candidate.image_url,
+        product_detail_url: candidate.product_detail_url ?? candidate.productDetailUrl ?? candidate.product_url ?? candidate.item_url,
+        target_sale_price: candidate.target_sale_price ?? candidate.targetSalePrice ?? candidate.sale_price ?? candidate.price,
+        target_sale_price_currency: candidate.target_sale_price_currency ?? candidate.targetSalePriceCurrency ?? candidate.target_currency ?? candidate.currency ?? "EUR",
+        target_original_price: candidate.target_original_price ?? candidate.original_price,
+      };
+      const product = classifyProduct(normalized, group.category);
       if (product && !unique.has(product.id)) unique.set(product.id, product);
     }
     if (candidates.length < 50) break;
@@ -178,13 +222,14 @@ export async function POST(request: Request) { return GET(request); }
 export async function GET(request: Request) {
   const appKey = process.env.ALIEXPRESS_APP_KEY?.trim();
   const appSecret = process.env.ALIEXPRESS_APP_SECRET?.trim();
+  const dsSession = process.env.ALIEXPRESS_DS_ACCESS_TOKEN?.trim() || process.env.ALIEXPRESS_ACCESS_TOKEN?.trim();
   const url = new URL(request.url);
   if ((url.searchParams.get("country") || "DE").toUpperCase() !== "DE" || (url.searchParams.get("currency") || "EUR").toUpperCase() !== "EUR" || (url.searchParams.get("language") || "DE").toUpperCase() !== "DE") {
-    return responseBody({ products: [], count: 0, limit: 1000, configured: Boolean(appKey && appSecret), source: "simulation", supplier: "Simulation", persisted: false, categories: {}, partial: false, failedCategories: [], inventoryNote: INVENTORY_NOTE + " Supplier affiliate search is discovery-only and does not confirm live SKU quantities." } as CatalogBody, 400);
+    return responseBody({ products: [], count: 0, limit: 1000, configured: Boolean(appKey && appSecret && dsSession), source: "simulation", supplier: "Simulation", persisted: false, categories: {}, partial: false, failedCategories: [], inventoryNote: INVENTORY_NOTE + " Supplier affiliate search is discovery-only and does not confirm live SKU quantities." } as CatalogBody, 400);
   }
   const cacheKey = [appKey || "simulation", "DE", "EUR", "DE"].join(":");
   if (cachedCatalog?.key === cacheKey && cachedCatalog.expiresAt > Date.now()) return responseBody(cachedCatalog.body);
-  if (!appKey || !appSecret) {
+  if (!appKey || !appSecret || !dsSession) {
     const persisted = await readPersistedCatalog();
     if (persisted) {
       const body = { ...persisted, persisted: true, notice: "Showing the last saved catalog. Inventory is not verified; checkout must remain disabled." };
@@ -201,7 +246,7 @@ export async function GET(request: Request) {
     return responseBody(body);
   }
   try {
-    const groups = await Promise.allSettled(SEARCH_GROUPS.map(group => searchGroup(group, appKey, appSecret)));
+    const groups = await Promise.allSettled(SEARCH_GROUPS.map(group => searchGroup(group, appKey, appSecret, dsSession)));
     const products = new Map<string, StoreProduct>();
     const errors: string[] = [];
     const errorDetails: string[] = [];
