@@ -1,5 +1,5 @@
 import { put, list } from "@vercel/blob";
-import { createHmac } from "node:crypto";
+import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -89,9 +89,17 @@ function collectProductObjects(input: unknown, out: Record<string, unknown>[] = 
   return out;
 }
 function signRequest(params: Record<string, string>, secret: string): string {
-  // AliExpress TOP/DS APIs use HMAC-MD5 when sign_method=hmac.
-  const payload = Object.keys(params).filter(key => key !== "sign").sort().map(key => key + params[key]).join("");
-  return createHmac("md5", secret).update(payload, "utf8").digest("hex").toUpperCase();
+  // TOP MD5 signing: uppercase MD5(secret + sorted key/value pairs + secret).
+  // Sign only the exact string-valued parameters sent with the request; exclude "sign".
+  const payload = Object.keys(params)
+    .filter((key) => key !== "sign")
+    .sort()
+    .map((key) => key + params[key])
+    .join("");
+  return createHash("md5")
+    .update(secret + payload + secret, "utf8")
+    .digest("hex")
+    .toUpperCase();
 }
 function topTimestamp(): string {
   // TOP timestamps use China Standard Time (UTC+08:00), formatted as yyyy-MM-dd HH:mm:ss.
@@ -121,7 +129,7 @@ async function searchGroup(group: SearchGroup, appKey: string, appSecret: string
       app_key: appKey,
       method: "aliexpress.ds.recommend.feed.get",
       timestamp: topTimestamp(),
-      sign_method: "hmac",
+      sign_method: "md5",
       format: "json",
       v: "2.0",
       country: "DE",
