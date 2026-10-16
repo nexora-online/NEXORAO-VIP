@@ -122,11 +122,12 @@ function collectDsProducts(input: unknown): Record<string, unknown>[] {
   visit(input);
   return out;
 }
-async function searchGroup(group: SearchGroup, appKey: string, appSecret: string): Promise<StoreProduct[]> {
+async function searchGroup(group: SearchGroup, appKey: string, appSecret: string, accessToken: string): Promise<StoreProduct[]> {
   const unique = new Map<string, StoreProduct>();
   for (let page = 1; page <= 2; page++) {
     const params: Record<string, string> = {
       app_key: appKey,
+      session: accessToken,
       method: "aliexpress.ds.recommend.feed.get",
       timestamp: topTimestamp(),
       sign_method: "md5",
@@ -158,6 +159,10 @@ async function searchGroup(group: SearchGroup, appKey: string, appSecret: string
     if (error) {
       const code = text(error.code ?? error.sub_code);
       const message = text(error.msg ?? error.message ?? error.sub_msg);
+      const providerText = (code + " " + message).toLowerCase();
+      if (/token|session|authoriz|expired|invalid_session|invalid_access_token/.test(providerText)) {
+        throw new Error("AliExpress authorization token is missing, invalid, or expired. Set/refresh ALIEXPRESS_ACCESS_TOKEN in Vercel and redeploy.");
+      }
       throw new Error("AliExpress DS API error" + (code ? " [" + code.slice(0, 80) + "]" : "") + (message ? ": " + message.slice(0, 220) : ""));
     }
     const candidates = collectDsProducts(data);
@@ -229,16 +234,18 @@ export async function POST(request: Request) { return GET(request); }
 export async function GET(request: Request) {
   const appKey = process.env.ALIEXPRESS_APP_KEY?.trim();
   const appSecret = process.env.ALIEXPRESS_APP_SECRET?.trim();
+  const accessToken = process.env.ALIEXPRESS_ACCESS_TOKEN?.trim() || process.env.ALIEXPRESS_DS_ACCESS_TOKEN?.trim();
   const url = new URL(request.url);
   if ((url.searchParams.get("country") || "DE").toUpperCase() !== "DE" || (url.searchParams.get("currency") || "EUR").toUpperCase() !== "EUR" || (url.searchParams.get("language") || "DE").toUpperCase() !== "DE") {
-    return responseBody({ products: [], count: 0, limit: 1000, configured: Boolean(appKey && appSecret), source: "simulation", supplier: "Simulation", persisted: false, categories: {}, partial: false, failedCategories: [], inventoryNote: INVENTORY_NOTE + " Supplier affiliate search is discovery-only and does not confirm live SKU quantities." } as CatalogBody, 400);
+    return responseBody({ products: [], count: 0, limit: 1000, configured: Boolean(appKey && appSecret && accessToken), source: "simulation", supplier: "Simulation", persisted: false, categories: {}, partial: false, failedCategories: [], inventoryNote: INVENTORY_NOTE + " Supplier affiliate search is discovery-only and does not confirm live SKU quantities." } as CatalogBody, 400);
   }
   const cacheKey = [appKey || "simulation", "DE", "EUR", "DE"].join(":");
   if (cachedCatalog?.key === cacheKey && cachedCatalog.expiresAt > Date.now()) return responseBody(cachedCatalog.body);
-  if (!appKey || !appSecret) {
+  if (!appKey || !appSecret || !accessToken) {
+    const missing = [!appKey ? "ALIEXPRESS_APP_KEY" : "", !appSecret ? "ALIEXPRESS_APP_SECRET" : "", !accessToken ? "ALIEXPRESS_ACCESS_TOKEN" : ""].filter(Boolean);
     const persisted = await readPersistedCatalog();
     if (persisted) {
-      const body = { ...persisted, persisted: true, notice: "Showing the last saved catalog. Inventory is not verified; checkout must remain disabled." };
+      const body = { ...persisted, persisted: true, notice: "Showing the last saved catalog. Inventory is not verified; checkout must remain disabled. Missing supplier settings: " + missing.join(", ") };
       cachedCatalog = { key: cacheKey, expiresAt: Date.now() + 10 * 60 * 1000, body };
       return responseBody(body);
     }
@@ -246,13 +253,13 @@ export async function GET(request: Request) {
       products: simulationCatalog(), count: 10, limit: 1000, configured: false, source: "simulation", supplier: "Simulation", persisted: false,
       categories: Object.fromEntries(SEARCH_GROUPS.map(group => [group.category, simulationCatalog().filter(p => p.category === group.category).length])),
       partial: false, failedCategories: [], inventoryNote: INVENTORY_NOTE + " Simulated examples only: no supplier, SKU, price, or stock has been verified.",
-      notice: "SIMULATION ONLY — these are illustrative demo entries, not real products. Payments and fulfillment must remain disabled.",
+      notice: "SIMULATION ONLY — these are illustrative demo entries, not real products. Payments and fulfillment must remain disabled. Missing supplier settings: " + missing.join(", "),
     };
     cachedCatalog = { key: cacheKey, expiresAt: Date.now() + 60 * 1000, body };
     return responseBody(body);
   }
   try {
-    const groups = await Promise.allSettled(SEARCH_GROUPS.map(group => searchGroup(group, appKey, appSecret)));
+    const groups = await Promise.allSettled(SEARCH_GROUPS.map(group => searchGroup(group, appKey, appSecret, accessToken)));
     const products = new Map<string, StoreProduct>();
     const errors: string[] = [];
     const errorDetails: string[] = [];
