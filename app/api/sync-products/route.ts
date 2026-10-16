@@ -20,7 +20,7 @@ type CatalogBody = {
   products: StoreProduct[]; count: number; limit: 1000; configured: boolean;
   source: "aliexpress" | "simulation"; supplier: string; persisted: boolean;
   categories: Record<string, number>; partial: boolean; failedCategories: string[];
-  inventoryNote: string; notice?: string;
+  inventoryNote: string; notice?: string; errorDetails?: string[];
 };
 
 // Store scope: women's fashion, personal care and beauty. No men's/home filler products.
@@ -106,11 +106,18 @@ async function searchGroup(group: SearchGroup, appKey: string, appSecret: string
       method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8", Accept: "application/json" },
       body: new URLSearchParams(params).toString(), cache: "no-store", signal: AbortSignal.timeout(8000),
     });
-    if (!response.ok) throw new Error("AliExpress API returned HTTP " + response.status);
-    const data: unknown = await response.json();
-    if (!data || typeof data !== "object") throw new Error("AliExpress returned an invalid response");
+    const responseText = await response.text();
+    let data: unknown;
+    try { data = JSON.parse(responseText); } catch { data = null; }
+    if (!response.ok) throw new Error("AliExpress HTTP " + response.status + (response.statusText ? " " + response.statusText : ""));
+    if (!data || typeof data !== "object") throw new Error("AliExpress returned non-JSON or invalid response (HTTP " + response.status + ")");
     const root = data as Record<string, unknown>;
-    if (root.error_response || root.error || (root.code != null && Number(root.code) >= 400)) throw new Error("AliExpress rejected the query");
+    const error = (root.error_response && typeof root.error_response === "object" ? root.error_response : root.error && typeof root.error === "object" ? root.error : null) as Record<string, unknown> | null;
+    if (error || (root.code != null && Number(root.code) >= 400)) {
+      const code = text(error?.code ?? error?.sub_code ?? root.code);
+      const message = text(error?.msg ?? error?.message ?? error?.sub_msg ?? root.message);
+      throw new Error("AliExpress API error" + (code ? " [" + code.slice(0, 80) + "]" : "") + (message ? ": " + message.slice(0, 240) : ""));
+    }
     const candidates = collectProductObjects(data);
     for (const candidate of candidates) {
       const product = classifyProduct(candidate, group.category);
@@ -196,9 +203,15 @@ export async function GET(request: Request) {
     const groups = await Promise.allSettled(SEARCH_GROUPS.map(group => searchGroup(group, appKey, appSecret)));
     const products = new Map<string, StoreProduct>();
     const errors: string[] = [];
+    const errorDetails: string[] = [];
     groups.forEach((result, index) => {
       if (result.status === "fulfilled") result.value.forEach(p => { if (!products.has(p.id)) products.set(p.id, p); });
-      else errors.push(SEARCH_GROUPS[index].category);
+      else {
+        errors.push(SEARCH_GROUPS[index].category);
+        const reason = result.reason;
+        const detail = reason instanceof Error ? reason.message : "Unknown provider error";
+        errorDetails.push(SEARCH_GROUPS[index].category + ": " + detail.slice(0, 320));
+      }
     });
     const all = [...products.values()].slice(0, 1000);
     if (!all.length) {
@@ -206,7 +219,7 @@ export async function GET(request: Request) {
       if (persisted) return responseBody({ ...persisted, persisted: true, notice: "Supplier sync failed; showing previously saved catalog. Inventory remains unverified." }, 200);
       return responseBody({
         products: [], count: 0, limit: 1000, configured: true, source: "aliexpress", supplier: "AliExpress", persisted: false,
-        categories: {}, partial: errors.length > 0, failedCategories: errors,
+        categories: {}, partial: errors.length > 0, failedCategories: errors, errorDetails,
         inventoryNote: "Affiliate product-query API does not verify live SKU stock.",
         notice: "No valid EUR products with secure image and product links were returned. Demo data is not mixed into live supplier results.",
       }, 502);
@@ -221,13 +234,16 @@ export async function GET(request: Request) {
     if (!body.persisted) body.notice = "Catalog fetched but not durably saved. Configure BLOB_READ_WRITE_TOKEN in Vercel to enable persistent storage.";
     cachedCatalog = { key: cacheKey, expiresAt: Date.now() + 10 * 60 * 1000, body };
     return responseBody(body);
-  } catch {
+  } catch (caught) {
+    const safeError = caught instanceof Error ? caught.message.slice(0, 320) : "Unknown sync error";
+    console.error("[sync-products] Provider sync failed:", safeError);
     const persisted = await readPersistedCatalog();
     if (persisted) return responseBody({ ...persisted, persisted: true, notice: "Live sync failed; serving the previously saved catalog. Stock is not verified." });
     return responseBody({
       products: [], count: 0, limit: 1000, configured: true, source: "aliexpress", supplier: "AliExpress", persisted: false,
       categories: {}, partial: false, failedCategories: [], inventoryNote: "Stock is not verified.",
-      notice: "AliExpress sync failed and no saved catalog was available. Check provider access and BLOB_READ_WRITE_TOKEN.",
+      errorDetails: [safeError],
+      notice: "AliExpress sync failed and no saved catalog was available. See safe errorDetails for the provider response; no secrets are logged.",
     } as CatalogBody, 502);
   }
 }
