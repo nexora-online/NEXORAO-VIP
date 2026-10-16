@@ -23,13 +23,16 @@ type CatalogBody = {
   inventoryNote: string; notice?: string;
 };
 
+// Store scope: women's fashion, personal care and beauty. No men's/home filler products.
 const SEARCH_GROUPS: SearchGroup[] = [
-  { category: "DAMEN", keywords: "women fashion elegant dress" },
-  { category: "HERREN", keywords: "men fashion elegant clothing" },
-  { category: "SCHMUCK & UHREN", keywords: "jewelry watches elegant" },
-  { category: "BEAUTY", keywords: "beauty skincare makeup" },
-  { category: "ACCESSOIRES", keywords: "women handbags accessories" },
-  { category: "LIFESTYLE", keywords: "home lifestyle decor" },
+  { category: "BEAUTY", keywords: "Rexona women deodorant antiperspirant women's personal care" },
+  { category: "BEAUTY", keywords: "women skincare face care moisturizer serum cleanser" },
+  { category: "BEAUTY", keywords: "women cosmetics makeup mascara lipstick" },
+  { category: "BEAUTY", keywords: "women perfume fragrance body mist" },
+  { category: "DAMEN", keywords: "women lingerie underwear nightwear" },
+  { category: "DAMEN", keywords: "women fashion dresses elegant clothing" },
+  { category: "ACCESSOIRES", keywords: "women handbags purses fashion accessories" },
+  { category: "SCHMUCK & UHREN", keywords: "women jewelry earrings necklaces bracelets" },
 ];
 const BLOB_PATH = "catalog/nexora-vip-products.json";
 const MAX_AGE_MS = 24 * 60 * 60 * 1000;
@@ -101,7 +104,7 @@ async function searchGroup(group: SearchGroup, appKey: string, appSecret: string
     params.sign = signRequest(params, appSecret);
     const response = await fetch("https://api-sg.aliexpress.com/sync", {
       method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8", Accept: "application/json" },
-      body: new URLSearchParams(params).toString(), cache: "no-store", signal: AbortSignal.timeout(12000),
+      body: new URLSearchParams(params).toString(), cache: "no-store", signal: AbortSignal.timeout(8000),
     });
     if (!response.ok) throw new Error("AliExpress API returned HTTP " + response.status);
     const data: unknown = await response.json();
@@ -169,7 +172,7 @@ export async function GET(request: Request) {
   const appSecret = process.env.ALIEXPRESS_APP_SECRET?.trim();
   const url = new URL(request.url);
   if ((url.searchParams.get("country") || "DE").toUpperCase() !== "DE" || (url.searchParams.get("currency") || "EUR").toUpperCase() !== "EUR" || (url.searchParams.get("language") || "DE").toUpperCase() !== "DE") {
-    return responseBody({ products: [], count: 0, limit: 1000, configured: Boolean(appKey && appSecret), source: "simulation", supplier: "Simulation", persisted: false, categories: {}, partial: false, failedCategories: [], inventoryNote: "Stock is not verified." } as CatalogBody, 400);
+    return responseBody({ products: [], count: 0, limit: 1000, configured: Boolean(appKey && appSecret), source: "simulation", supplier: "Simulation", persisted: false, categories: {}, partial: false, failedCategories: [], inventoryNote: "Stock is not verified. Supplier affiliate search is discovery-only and does not confirm live SKU quantities." } as CatalogBody, 400);
   }
   const cacheKey = [appKey || "simulation", "DE", "EUR", "DE"].join(":");
   if (cachedCatalog?.key === cacheKey && cachedCatalog.expiresAt > Date.now()) return responseBody(cachedCatalog.body);
@@ -212,7 +215,7 @@ export async function GET(request: Request) {
       products: all, count: all.length, limit: 1000, configured: true, source: "aliexpress", supplier: "AliExpress",
       persisted: false, categories: Object.fromEntries(SEARCH_GROUPS.map(group => [group.category, all.filter(p => p.category === group.category).length])),
       partial: errors.length > 0, failedCategories: errors,
-      inventoryNote: "Affiliate discovery does not reliably expose live SKU-level stock. Stock is unknown until a stock-capable supplier API verifies it.",
+      inventoryNote: "Affiliate discovery does not verify live SKU-level stock. Stock remains unknown until a stock-capable supplier API verifies it. Rexona results are included only when returned by the configured supplier API.",
     };
     body.persisted = await persistCatalog(body);
     if (!body.persisted) body.notice = "Catalog fetched but not durably saved. Configure BLOB_READ_WRITE_TOKEN in Vercel to enable persistent storage.";
