@@ -114,7 +114,7 @@ function collectDsProducts(input: unknown): Record<string, unknown>[] {
   visit(input);
   return out;
 }
-async function searchGroup(group: SearchGroup, appKey: string, appSecret: string, session: string): Promise<StoreProduct[]> {
+async function searchGroup(group: SearchGroup, appKey: string, appSecret: string): Promise<StoreProduct[]> {
   const unique = new Map<string, StoreProduct>();
   for (let page = 1; page <= 2; page++) {
     const params: Record<string, string> = {
@@ -124,7 +124,6 @@ async function searchGroup(group: SearchGroup, appKey: string, appSecret: string
       sign_method: "hmac",
       format: "json",
       v: "2.0",
-      session,
       country: "DE",
       target_currency: "EUR",
       target_language: "DE",
@@ -222,14 +221,13 @@ export async function POST(request: Request) { return GET(request); }
 export async function GET(request: Request) {
   const appKey = process.env.ALIEXPRESS_APP_KEY?.trim();
   const appSecret = process.env.ALIEXPRESS_APP_SECRET?.trim();
-  const dsSession = process.env.ALIEXPRESS_DS_ACCESS_TOKEN?.trim() || process.env.ALIEXPRESS_ACCESS_TOKEN?.trim();
   const url = new URL(request.url);
   if ((url.searchParams.get("country") || "DE").toUpperCase() !== "DE" || (url.searchParams.get("currency") || "EUR").toUpperCase() !== "EUR" || (url.searchParams.get("language") || "DE").toUpperCase() !== "DE") {
-    return responseBody({ products: [], count: 0, limit: 1000, configured: Boolean(appKey && appSecret && dsSession), source: "simulation", supplier: "Simulation", persisted: false, categories: {}, partial: false, failedCategories: [], inventoryNote: INVENTORY_NOTE + " Supplier affiliate search is discovery-only and does not confirm live SKU quantities." } as CatalogBody, 400);
+    return responseBody({ products: [], count: 0, limit: 1000, configured: Boolean(appKey && appSecret), source: "simulation", supplier: "Simulation", persisted: false, categories: {}, partial: false, failedCategories: [], inventoryNote: INVENTORY_NOTE + " Supplier affiliate search is discovery-only and does not confirm live SKU quantities." } as CatalogBody, 400);
   }
   const cacheKey = [appKey || "simulation", "DE", "EUR", "DE"].join(":");
   if (cachedCatalog?.key === cacheKey && cachedCatalog.expiresAt > Date.now()) return responseBody(cachedCatalog.body);
-  if (!appKey || !appSecret || !dsSession) {
+  if (!appKey || !appSecret) {
     const persisted = await readPersistedCatalog();
     if (persisted) {
       const body = { ...persisted, persisted: true, notice: "Showing the last saved catalog. Inventory is not verified; checkout must remain disabled." };
@@ -246,7 +244,7 @@ export async function GET(request: Request) {
     return responseBody(body);
   }
   try {
-    const groups = await Promise.allSettled(SEARCH_GROUPS.map(group => searchGroup(group, appKey, appSecret, dsSession)));
+    const groups = await Promise.allSettled(SEARCH_GROUPS.map(group => searchGroup(group, appKey, appSecret)));
     const products = new Map<string, StoreProduct>();
     const errors: string[] = [];
     const errorDetails: string[] = [];
