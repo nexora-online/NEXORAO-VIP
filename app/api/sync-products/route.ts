@@ -36,6 +36,7 @@ const SEARCH_GROUPS: SearchGroup[] = [
 ];
 const BLOB_PATH = "catalog/nexora-vip-products.json";
 const MAX_AGE_MS = 24 * 60 * 60 * 1000;
+const INVENTORY_NOTE = "Stock is unknown until a stock-capable supplier API verifies it.";
 let cachedCatalog: { key: string; expiresAt: number; body: CatalogBody } | null = null;
 
 const text = (value: unknown): string => typeof value === "string" || typeof value === "number" ? String(value).trim() : "";
@@ -220,7 +221,7 @@ export async function GET(request: Request) {
       return responseBody({
         products: [], count: 0, limit: 1000, configured: true, source: "aliexpress", supplier: "AliExpress", persisted: false,
         categories: {}, partial: errors.length > 0, failedCategories: errors, errorDetails,
-        inventoryNote: "Affiliate product-query API does not verify live SKU stock.",
+        inventoryNote: INVENTORY_NOTE + " Affiliate product-query API does not verify live SKU stock.",
         notice: "No valid EUR products with secure image and product links were returned. Demo data is not mixed into live supplier results.",
       }, 502);
     }
@@ -228,7 +229,7 @@ export async function GET(request: Request) {
       products: all, count: all.length, limit: 1000, configured: true, source: "aliexpress", supplier: "AliExpress",
       persisted: false, categories: Object.fromEntries(SEARCH_GROUPS.map(group => [group.category, all.filter(p => p.category === group.category).length])),
       partial: errors.length > 0, failedCategories: errors,
-      inventoryNote: "Affiliate discovery does not verify live SKU-level stock. Stock remains unknown until a stock-capable supplier API verifies it. Rexona results are included only when returned by the configured supplier API.",
+      inventoryNote: INVENTORY_NOTE + " Affiliate discovery does not verify live SKU-level stock. Rexona results are included only when returned by the configured supplier API.",
     };
     body.persisted = await persistCatalog(body);
     if (!body.persisted) body.notice = "Catalog fetched but not durably saved. Configure BLOB_READ_WRITE_TOKEN in Vercel to enable persistent storage.";
@@ -241,7 +242,7 @@ export async function GET(request: Request) {
     if (persisted) return responseBody({ ...persisted, persisted: true, notice: "Live sync failed; serving the previously saved catalog. Stock is not verified." });
     return responseBody({
       products: [], count: 0, limit: 1000, configured: true, source: "aliexpress", supplier: "AliExpress", persisted: false,
-      categories: {}, partial: false, failedCategories: [], inventoryNote: "Stock is not verified.",
+      categories: {}, partial: false, failedCategories: [], inventoryNote: INVENTORY_NOTE,
       errorDetails: [safeError],
       notice: "AliExpress sync failed and no saved catalog was available. See safe errorDetails for the provider response; no secrets are logged.",
     } as CatalogBody, 502);
