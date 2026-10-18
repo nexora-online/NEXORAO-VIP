@@ -194,3 +194,37 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .closing-banner{background:linear-gradient(120deg,#0b0806,#130e07 55%,#080706)}
 }
 @media(max-width:380px){.hero{min-height:760px}.brand strong{font-size:24px}.section-heading h2{font-size:22px}}
+
+
+/* NEXORA international delivery partners — luxury black & gold, responsive. */
+.shipping-hub{padding:clamp(48px,7vw,88px) 5%;background:radial-gradient(ellipse at 50% 0,rgba(212,175,55,.095),transparent 48%),linear-gradient(180deg,#090806,#050504);border-top:1px solid #6b512544;border-bottom:1px solid #6b512544}
+.shipping-hub-heading{width:min(900px,100%);margin:0 auto 32px;text-align:center}
+.shipping-hub-heading h2{font:500 clamp(25px,3.7vw,42px) 'Cinzel',serif;color:var(--gold-hi);margin:14px 0}
+.shipping-hub-heading p{max-width:650px;margin:0 auto;color:#b9ad99;font-size:11px;line-height:1.9}
+.carrier-grid{width:min(1100px,100%);margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.carrier-card{min-width:0;min-height:148px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;text-decoration:none;border:1px solid #6b512577;border-radius:3px;background:linear-gradient(145deg,#17120b,#090806 70%);box-shadow:inset 0 0 24px #d4af3708;transition:transform .2s,border-color .2s,box-shadow .2s}
+.carrier-card:hover{transform:translateY(-3px);border-color:#e1bd5a;box-shadow:0 12px 28px #0005,0 0 20px #d4af3710}
+.carrier-wordmark{font:800 29px Arial,Helvetica,sans-serif;letter-spacing:-.06em;line-height:1;color:#f5f0e6}
+.carrier-caption{font-size:8px;letter-spacing:.13em;text-transform:uppercase;color:#b7a98e}
+.carrier-link{margin-top:4px;color:var(--gold-hi);font-size:9px;letter-spacing:.08em}
+.carrier-dhl .carrier-wordmark{font-style:italic;color:#ffcc00;text-shadow:2px 1px 0 #d40511}
+.carrier-ups .carrier-wordmark{color:#f1d7a2;text-shadow:0 1px 0 #5d321c}
+.carrier-fedex .carrier-wordmark span{color:#f5f0e6}.carrier-fedex .carrier-wordmark i{font-style:normal;color:#ff8b2b}
+.carrier-dpd .carrier-wordmark{color:#dc2534}
+.carrier-gls .carrier-wordmark{color:#f5f0e6;text-shadow:3px 0 #e3a72f}
+.carrier-aramex .carrier-wordmark{font-size:27px;letter-spacing:-.07em;color:#e94b38}
+.parcel-tracker{width:min(1100px,100%);margin:28px auto 0;padding:clamp(20px,3vw,30px);border:1px solid #92712d;background:linear-gradient(125deg,rgba(212,175,55,.075),rgba(12,10,7,.94) 45%);box-shadow:0 18px 44px #0003}
+.tracker-copy{display:flex;align-items:flex-start;gap:13px;color:var(--gold-hi)}
+.tracker-copy>svg{flex:none;margin-top:3px}
+.tracker-copy h3{margin:0 0 7px;font:500 19px 'Cinzel',serif;color:#f1dfb2}
+.tracker-copy p{margin:0;color:#b8ad9b;font-size:10px;line-height:1.8}
+.tracker-controls{display:grid;grid-template-columns:170px minmax(180px,1fr) auto;gap:10px;margin-top:20px}
+.tracker-controls select,.tracker-controls input{width:100%;min-width:0;min-height:46px;padding:0 13px;border:1px solid #59441b;border-radius:1px;background:#090806;color:#eee2c9;font:inherit;font-size:11px;outline-offset:3px}
+.tracker-controls select:focus,.tracker-controls input:focus{border-color:var(--gold-hi);outline:1px solid var(--gold-hi)}
+.tracker-controls input::placeholder{color:#928775}
+.track-button{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:46px;padding:0 17px;border:1px solid #f1d47c;background:linear-gradient(135deg,#f8e5a6,#c89b32);color:#100c06;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.track-button:hover{filter:brightness(1.07)}
+.tracker-note{display:block;margin-top:14px;color:#928775;font-size:9px;line-height:1.8}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:720px){.carrier-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.carrier-card{min-height:135px;padding:17px 10px}.carrier-wordmark{font-size:26px}.tracker-controls{grid-template-columns:1fr}.tracker-controls select,.tracker-controls input,.track-button{min-height:48px}.shipping-hub-heading{margin-bottom:25px}}
+@media(max-width:360px){.carrier-grid{gap:8px}.carrier-card{min-height:125px;padding:13px 7px}.carrier-wordmark{font-size:23px}.carrier-aramex .carrier-wordmark{font-size:22px}.parcel-tracker{padding:17px}}
