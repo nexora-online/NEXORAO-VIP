@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { LanguageProvider } from "./i18n";
 export const metadata: Metadata = {
   title: { default: "NEXORA — Exclusive Lifestyle • VIP Only", template: "%s | NEXORA VIP" },
   description: "Exklusive Produkte. Für besondere Menschen. Nur das Beste. Nur für Sie.",
@@ -19,4 +20,4 @@ export const metadata: Metadata = {
   },
   robots: { index: true, follow: true },
 };
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) { return <html lang="de"><body>{children}</body></html>; }
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) { return <html lang="de"><body><LanguageProvider>{children}</LanguageProvider></body></html>; }
