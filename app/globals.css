@@ -250,3 +250,33 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .luxury-collection-page .subpage-section-head h2{font-family:'Cinzel',serif;color:#e6ca7b}
 @media(max-width:900px){.dedicated-placeholder-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.luxury-placeholder-grid{gap:12px}}
 @media(max-width:600px){.dedicated-placeholder-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.home-placeholder-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.luxury-bottom-navigation{grid-template-columns:1fr;padding-bottom:42px}.luxury-bottom-navigation>a{padding:20px}.placeholder-feature{padding-left:5%;padding-right:5%}}
+
+/* NEXORA reusable empty product-detail modal */
+.modal-trigger-grid{margin-top:24px;margin-bottom:28px}
+.world-detail-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.selection-detail-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.detail-placeholder{display:block;width:100%;padding:0;cursor:pointer;text-align:inherit;transition:border-color .2s,box-shadow .2s,transform .2s}
+.detail-placeholder:hover,.detail-placeholder:focus-visible{outline:none;border-color:#d4af37;box-shadow:inset 0 0 0 1px rgba(255,229,153,.65),0 8px 26px rgba(212,175,55,.09);transform:translateY(-2px)}
+.product-detail-backdrop{position:fixed;z-index:1200;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.product-detail-modal{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);width:min(100%,940px);max-height:min(88vh,760px);overflow:auto;background:linear-gradient(135deg,#100d08,#050404 60%,#0b0906);border:1px solid rgba(212,175,55,.68);box-shadow:0 25px 100px rgba(0,0,0,.65),inset 0 0 0 5px rgba(212,175,55,.035);color:#e8d8ad}
+.product-detail-close{position:absolute;z-index:2;top:14px;right:14px;width:38px;height:38px;display:grid;place-items:center;border:1px solid rgba(212,175,55,.42);background:#090806;color:#d4af37;cursor:pointer}
+.product-detail-visual{padding:28px;display:flex;min-height:390px;border-right:1px solid rgba(212,175,55,.16)}
+.product-detail-frame{position:relative;flex:1;min-height:320px;border:1px solid rgba(212,175,55,.62);background:linear-gradient(145deg,#0d0b08,#030303);box-shadow:inset 0 0 0 7px rgba(212,175,55,.035)}
+.product-detail-frame:before{content:"";position:absolute;inset:12px;border:1px solid rgba(212,175,55,.16)}
+.product-detail-frame span{position:absolute;inset:0;display:grid;place-items:center;font-family:'Cinzel',serif;font-size:72px;color:rgba(212,175,55,.12)}
+.product-detail-info{padding:42px 34px 30px;display:flex;flex-direction:column;align-items:flex-start}
+.product-detail-info h2{min-height:28px;margin:22px 0 10px;font-family:'Cinzel',Georgia,serif;font-size:24px;font-weight:400;color:#f1d98f}
+.product-detail-description{min-height:44px;margin:0;color:#a99b7d;font-size:13px;line-height:1.8}
+.product-detail-rule{width:100%;height:1px;background:linear-gradient(90deg,rgba(212,175,55,.65),transparent);margin:18px 0}
+.variant-group{width:100%;margin:0 0 22px}
+.variant-label{display:block;margin-bottom:11px;color:#d8c58f;font-family:'Cinzel',Georgia,serif;font-size:11px;letter-spacing:.08em}
+.variant-options{display:flex;flex-wrap:wrap;gap:8px}
+.variant-option{min-width:39px;height:36px;border:1px solid rgba(212,175,55,.34);background:#080706;color:#cbbd9a;font-size:11px;cursor:pointer}
+.variant-option.selected{border-color:#f1d98f;background:rgba(212,175,55,.13);color:#ffe8a1}
+.variant-swatch{width:34px;height:34px;padding:4px;border:1px solid rgba(212,175,55,.3);background:#080706;cursor:pointer}
+.variant-swatch span{display:block;width:100%;height:100%;border:1px solid rgba(255,255,255,.16)}
+.variant-swatch.selected{border-color:#ffe599;box-shadow:0 0 0 1px rgba(212,175,55,.35)}
+.product-detail-empty-fields{display:grid;gap:8px;width:100%;margin:0 0 20px}
+.product-detail-empty-fields span{height:1px;background:rgba(212,175,55,.12)}
+.product-detail-dismiss{margin-top:auto;cursor:pointer}
+@media(max-width:650px){.world-detail-grid,.selection-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.product-detail-backdrop{padding:12px}.product-detail-modal{grid-template-columns:1fr;max-height:92vh}.product-detail-visual{padding:18px;min-height:220px;border-right:0;border-bottom:1px solid rgba(212,175,55,.16)}.product-detail-frame{min-height:190px}.product-detail-info{padding:26px 22px 22px}.product-detail-info h2{margin-top:12px}.product-detail-frame span{font-size:48px}}
