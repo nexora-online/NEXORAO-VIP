@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
 import Link from "next/link";
-import {ArrowLeft,Crown,LockKeyhole,ShieldCheck} from "lucide-react";
+import {ArrowLeft,Crown,LockKeyhole,ShieldCheck,ShoppingBag} from "lucide-react";
 import {useLanguage,LanguageSwitcher,useCart} from "../i18n";
 import {FALLBACK_PRODUCTS} from "../../lib/fallback-catalog";
 type Product={id:string;name:string;price:number;currency?:string;imageUrl:string;available?:boolean|null};
