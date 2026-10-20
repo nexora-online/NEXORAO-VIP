@@ -93,8 +93,12 @@ export async function POST(request: Request) {
     form.set(`line_items[${index}][quantity]`, String(quantity));
     form.set(`line_items[${index}][price_data][currency]`, "eur");
     form.set(`line_items[${index}][price_data][unit_amount]`, String(euroAmount(product.price)));
-    const optionLabel = [type && `Type: ${type}`, color && `Color: ${color}`, size && `Size: ${size}`].filter(Boolean).join(" · ");\n    form.set(`line_items[${index}][price_data][product_data][name]`, safeText(optionLabel ? `${product.name} — ${optionLabel}` : product.name, 120));
-    form.set(`line_items[${index}][price_data][product_data][metadata][supplier_product_id]`, safeText(product.id, 120));\n    if (type) form.set(`line_items[${index}][price_data][product_data][metadata][selected_type]`, type);\n    if (color) form.set(`line_items[${index}][price_data][product_data][metadata][selected_color]`, color);\n    if (size) form.set(`line_items[${index}][price_data][product_data][metadata][selected_size]`, size);
+    const optionLabel = [type && `Type: ${type}`, color && `Color: ${color}`, size && `Size: ${size}`].filter(Boolean).join(" · ");
+    form.set(`line_items[${index}][price_data][product_data][name]`, safeText(optionLabel ? `${product.name} — ${optionLabel}` : product.name, 120));
+    form.set(`line_items[${index}][price_data][product_data][metadata][supplier_product_id]`, safeText(product.id, 120));
+    if (type) form.set(`line_items[${index}][price_data][product_data][metadata][selected_type]`, type);
+    if (color) form.set(`line_items[${index}][price_data][product_data][metadata][selected_color]`, color);
+    if (size) form.set(`line_items[${index}][price_data][product_data][metadata][selected_size]`, size);
     if (product.imageUrl?.startsWith("https://")) form.set(`line_items[${index}][price_data][product_data][images][0]`, product.imageUrl);
   });
   try {
