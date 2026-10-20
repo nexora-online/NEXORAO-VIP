@@ -22,16 +22,16 @@ export async function POST(request: Request) {
   try { body = await request.json(); } catch { return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 }); }
   const rawItems = body && typeof body === "object" ? (body as { items?: unknown }).items : null;
   if (!Array.isArray(rawItems) || rawItems.length < 1 || rawItems.length > 30) return NextResponse.json({ error: "Add between 1 and 30 products to continue." }, { status: 400 });
-  const quantities = new Map<string, number>();
+  const quantities: { id: string; quantity: number; type: string; color: string; size: string }[] = [];
   for (const item of rawItems) {
     if (!item || typeof item !== "object") continue;
-    const row = item as { id?: unknown; quantity?: unknown };
+    const row = item as { id?: unknown; quantity?: unknown; type?: unknown; color?: unknown; size?: unknown };
     const id = safeText(row.id, 160);
     const quantity = Number(row.quantity ?? 1);
     if (!id || !Number.isInteger(quantity) || quantity < 1 || quantity > 10) return NextResponse.json({ error: "Invalid product or quantity." }, { status: 400 });
-    quantities.set(id, Math.min(10, (quantities.get(id) || 0) + quantity));
+    quantities.push({ id, quantity, type: safeText(row.type, 80), color: safeText(row.color, 80), size: safeText(row.size, 40) });
   }
-  if (!quantities.size) return NextResponse.json({ error: "The cart is empty." }, { status: 400 });
+  if (!quantities.length) return NextResponse.json({ error: "The cart is empty." }, { status: 400 });
   const origin = new URL(request.url).origin;
   let catalogResponse: Response;
   try {
@@ -43,13 +43,13 @@ export async function POST(request: Request) {
   const catalogPayload: unknown = await catalogResponse.json();
   const catalog = catalogPayload && typeof catalogPayload === "object" && Array.isArray((catalogPayload as { products?: unknown }).products) ? (catalogPayload as { products: StoreProduct[] }).products : [];
   const byId = new Map(catalog.map(p => [String(p.id), p]));
-  const selected: { product: StoreProduct; quantity: number }[] = [];
+  const selected: { product: StoreProduct; quantity: number; type: string; color: string; size: string }[] = [];
   for (const [id, quantity] of quantities) {
     const product = byId.get(id);
     if (!product || !Number.isFinite(product.price) || product.price <= 0 || !/^[A-Z]{3}$/.test(product.currency || "") || product.currency.toLowerCase() !== "eur" || product.available !== true) {
       return NextResponse.json({ error: "A cart item does not have verified live inventory or a valid EUR price. No payment was created. Refresh the catalog or try again when supplier stock is confirmed.", productId: id }, { status: 409 });
     }
-    selected.push({ product, quantity });
+    selected.push({ product, quantity, type, color, size });
   }
   const form = new URLSearchParams();
   form.set("mode", "payment");
@@ -89,12 +89,12 @@ export async function POST(request: Request) {
   form.set("metadata[store]", "NEXORA VIP");
   form.set("metadata[product_ids]", selected.map(x => x.product.id).join(",").slice(0, 500));
   form.set("metadata[fulfillment]", "requires_supplier_order_adapter");
-  selected.forEach(({ product, quantity }, index) => {
+  selected.forEach(({ product, quantity, type, color, size }, index) => {
     form.set(`line_items[${index}][quantity]`, String(quantity));
     form.set(`line_items[${index}][price_data][currency]`, "eur");
     form.set(`line_items[${index}][price_data][unit_amount]`, String(euroAmount(product.price)));
-    form.set(`line_items[${index}][price_data][product_data][name]`, safeText(product.name, 120));
-    form.set(`line_items[${index}][price_data][product_data][metadata][supplier_product_id]`, safeText(product.id, 120));
+    const optionLabel = [type && `Type: ${type}`, color && `Color: ${color}`, size && `Size: ${size}`].filter(Boolean).join(" · ");\n    form.set(`line_items[${index}][price_data][product_data][name]`, safeText(optionLabel ? `${product.name} — ${optionLabel}` : product.name, 120));
+    form.set(`line_items[${index}][price_data][product_data][metadata][supplier_product_id]`, safeText(product.id, 120));\n    if (type) form.set(`line_items[${index}][price_data][product_data][metadata][selected_type]`, type);\n    if (color) form.set(`line_items[${index}][price_data][product_data][metadata][selected_color]`, color);\n    if (size) form.set(`line_items[${index}][price_data][product_data][metadata][selected_size]`, size);
     if (product.imageUrl?.startsWith("https://")) form.set(`line_items[${index}][price_data][product_data][images][0]`, product.imageUrl);
   });
   try {
