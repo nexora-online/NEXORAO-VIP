@@ -228,3 +228,25 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:720px){.carrier-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.carrier-card{min-height:135px;padding:17px 10px}.carrier-wordmark{font-size:26px}.tracker-controls{grid-template-columns:1fr}.tracker-controls select,.tracker-controls input,.track-button{min-height:48px}.shipping-hub-heading{margin-bottom:25px}}
 @media(max-width:360px){.carrier-grid{gap:8px}.carrier-card{min-height:125px;padding:13px 7px}.carrier-wordmark{font-size:23px}.carrier-aramex .carrier-wordmark{font-size:22px}.parcel-tracker{padding:17px}}
+
+/* NEXORA luxury placeholder collections — preserves existing brand shell */
+.luxury-placeholder-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:18px}
+.luxury-placeholder{position:relative;aspect-ratio:1/1;min-width:0;background:linear-gradient(145deg,#0c0a08,#050404 65%,#100c07);border:1px solid transparent;border-radius:2px;background-clip:padding-box;box-shadow:inset 0 0 0 1px rgba(212,175,55,.52),inset 0 0 24px rgba(212,175,55,.035);overflow:hidden}
+.luxury-placeholder:before{content:"";position:absolute;inset:7px;border:1px solid rgba(212,175,55,.15);pointer-events:none}
+.luxury-placeholder:after{content:"N";position:absolute;inset:0;display:grid;place-items:center;font-family:'Cinzel',serif;font-size:clamp(22px,3vw,42px);color:rgba(212,175,55,.12);letter-spacing:.08em}
+.placeholder-feature{border-top:1px solid rgba(212,175,55,.14)}
+.home-placeholder-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.placeholder-actions{display:flex;justify-content:center;margin-top:28px}
+.gold-outline{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:13px 25px;border:1px solid #8e6c23;background:linear-gradient(120deg,rgba(212,175,55,.08),rgba(5,4,4,.7));color:#e7ca78;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.04em;transition:background .2s,border-color .2s}
+.gold-outline:hover{border-color:#ffe599;background:rgba(212,175,55,.12)}
+.luxury-bottom-navigation{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;padding:0 5.5% 70px}
+.luxury-bottom-navigation>a{display:grid;grid-template-columns:24px 1fr 20px;align-items:center;gap:12px;padding:24px 28px;border:1px solid #59441b;background:linear-gradient(135deg,#100d08,#050404);color:#d4af37}
+.luxury-bottom-navigation>a>span{font-family:'Cinzel',serif;font-size:clamp(14px,2vw,21px);color:#f1d98f}
+.luxury-bottom-navigation>a>small{grid-column:2;font-size:10px;color:#958a76}
+.luxury-bottom-navigation>a>svg:last-child{grid-column:3;grid-row:1 / span 2}
+.dedicated-placeholder-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:18px}
+.luxury-collection-page .collection-hero h1{font-family:'Cinzel',serif;color:#f1d98f}
+.luxury-collection-page .collection-hero p{color:#b9a985}
+.luxury-collection-page .subpage-section-head h2{font-family:'Cinzel',serif;color:#e6ca7b}
+@media(max-width:900px){.dedicated-placeholder-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.luxury-placeholder-grid{gap:12px}}
+@media(max-width:600px){.dedicated-placeholder-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.home-placeholder-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.luxury-bottom-navigation{grid-template-columns:1fr;padding-bottom:42px}.luxury-bottom-navigation>a{padding:20px}.placeholder-feature{padding-left:5%;padding-right:5%}}
