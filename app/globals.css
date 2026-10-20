@@ -309,3 +309,8 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .luxury-type-select:focus{border-color:#d4af37;box-shadow:0 0 0 1px rgba(212,175,55,.2)}
 .luxury-type-select option{background:#080706;color:#e8d18a}
 @media(max-width:700px){.luxury-home-focus .dedicated-placeholder-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.luxury-home-gateway a{width:100%;justify-content:center}.collection-category-tabs{margin-bottom:18px}}
+
+.hero-collection-gateways{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.hero-collection-gateways a{display:inline-flex;align-items:center;gap:9px;padding:11px 14px;border:1px solid rgba(212,175,55,.65);background:rgba(5,4,4,.82);color:#e8d18a;text-decoration:none;font-family:'Cinzel',Georgia,serif;font-size:12px;letter-spacing:.02em;transition:background .2s,border-color .2s}
+.hero-collection-gateways a:hover{border-color:#ffe599;background:rgba(212,175,55,.12)}
+@media(max-width:520px){.hero-collection-gateways{display:grid;grid-template-columns:1fr}.hero-collection-gateways a{justify-content:center}}
