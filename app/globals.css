@@ -322,3 +322,15 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .nexora-language-switcher option{background:#080706;color:#e8d18a}
 [dir="rtl"] .nexora-language-switcher select{padding:8px 10px 8px 28px}
 @media(max-width:600px){.nexora-language-switcher select{min-width:94px;max-width:125px;padding:7px 20px 7px 8px;font-size:10px}}
+
+
+/* NEXORA utility navigation: accessible luxury actions and pure-white cart treatment. */
+.utility-right .utility-action{min-height:32px;transition:color .2s ease,opacity .2s ease;white-space:nowrap}
+.utility-right .utility-search,.utility-right .utility-account,.utility-right .utility-wishlist{color:#b9afa0}
+.utility-right .utility-search:hover,.utility-right .utility-account:hover,.utility-right .utility-wishlist:hover{color:var(--gold-hi)}
+.utility-right .utility-cart,.utility-right .utility-cart:hover,.utility-right .utility-cart:focus-visible{color:#FFFFFF}
+.utility-right .utility-cart svg,.utility-right .utility-cart span{color:#FFFFFF;stroke:#FFFFFF}
+.utility-right .utility-cart b{background:transparent;color:#FFFFFF;border:1px solid #FFFFFF;width:16px;height:16px;top:-5px;right:-8px;font-size:8px;line-height:1}
+.utility-right .utility-action:focus-visible{outline:1px solid #FFFFFF;outline-offset:3px}
+@media(max-width:720px){.utility{min-height:43px;height:auto;gap:8px}.utility-right{gap:clamp(10px,3vw,16px)}.utility-right .utility-action{justify-content:center;gap:0;min-width:25px;padding:4px 2px}.utility-right .utility-action span{display:none}.utility-right .utility-action svg{width:17px;height:17px}.utility-right .utility-cart b{right:-5px;top:-3px}.utility-left,.utility-right{flex-shrink:0}.utility{padding-left:3%;padding-right:3%}}
+@media(max-width:380px){.utility-right{gap:8px}.utility-right .utility-action svg{width:16px;height:16px}.utility-left{gap:6px}}
