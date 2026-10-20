@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";import Link from "next/link";import {ArrowLeft,Crown,Minus,Plus,Trash2} from "lucide-react";import {useLanguage,LanguageSwitcher} from "../i18n";
 type Product={id:string;name:string;brand?:string;price:number;currency?:string;imageUrl:string;available?:boolean|null};
-export default function CartPage(){const [products,setProducts]=useState<Product[]>([]);const [ids,setIds]=useState<string[]>([]);const [loading,setLoading]=useState(true);
+export default function CartPage(){const {lang,rtl,t}=useLanguage();const [products,setProducts]=useState<Product[]>([]);const [ids,setIds]=useState<string[]>([]);const [loading,setLoading]=useState(true);
 useEffect(()=>{try{const raw=JSON.parse(localStorage.getItem("nexora-cart")||"[]");if(Array.isArray(raw))setIds(raw.filter((x):x is string=>typeof x==="string"))}catch{}fetch("/api/sync-products?country=DE&currency=EUR&language=DE",{cache:"no-store"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>setProducts(Array.isArray(d.products)?d.products:[])).catch(()=>setProducts([])).finally(()=>setLoading(false))},[]);
 const rows=useMemo(()=>{const map=new Map<string,{product:Product;quantity:number}>();ids.forEach(id=>{const p=products.find(x=>x.id===id);if(p){const old=map.get(id);map.set(id,{product:p,quantity:(old?.quantity||0)+1})}});return [...map.values()]},[ids,products]);
 const total=rows.reduce((sum,row)=>sum+row.product.price*row.quantity,0);function update(id:string,delta:number){const next=[...ids];if(delta>0)next.push(id);else{const i=next.indexOf(id);if(i>=0)next.splice(i,1)}setIds(next);localStorage.setItem("nexora-cart",JSON.stringify(next))}
