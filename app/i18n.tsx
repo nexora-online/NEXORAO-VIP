@@ -53,16 +53,16 @@ IT:{homeShippingTitle:"Partner per le spedizioni internazionali",trackingTitle:"
 TR:{homeShippingTitle:"Uluslararası kargo ortakları",trackingTitle:"Gönderinizi takip edin",trackingHelp:"Gönderi onayınızdaki takip numarasını girin.",trackingNumber:"Takip numarası",trackShipment:"Gönderiyi takip et",trackingNotice:"Takip bilgileri seçilen taşıyıcı tarafından sağlanır. Takip numarası gönderimden sonra kullanılabilir.",officialWebsite:"Resmî web sitesi",womenEdit:"Modern kadının yaşamında lüks",menEdit:"Modern erkek için lüks ve zarafet",curatedFootnote:"Özenle seçildi"}
 };
 const routeLabels:Record<Language,Messages>={
-DE:{cart:"Warenkorb",legal:"Rechtliches"},
-EN:{cart:"Shopping bag",legal:"Legal"},
-AR:{cart:"السلة",legal:"المعلومات القانونية"},
-FR:{cart:"Panier",legal:"Mentions légales"},
-RU:{cart:"Корзина",legal:"Правовая информация"},
-ZH:{cart:"购物袋",legal:"法律信息"},
-JA:{cart:"バッグ",legal:"法的情報"},
-ES:{cart:"Bolsa",legal:"Información legal"},
-IT:{cart:"Borsa",legal:"Informazioni legali"},
-TR:{cart:"Sepet",legal:"Yasal bilgiler"}
+DE:{cart:"Warenkorb",legal:"Rechtliches",colorBlack:"Schwarz",colorGold:"Gold",colorIvory:"Elfenbein",colorBurgundy:"Bordeaux",imprint:"Impressum",copyright:"Alle Rechte vorbehalten.",designed:"Für das Außergewöhnliche gestaltet"},
+EN:{cart:"Shopping bag",legal:"Legal",colorBlack:"Black",colorGold:"Gold",colorIvory:"Ivory",colorBurgundy:"Burgundy",imprint:"Imprint",copyright:"All rights reserved.",designed:"Designed for the exceptional"},
+AR:{cart:"السلة",legal:"المعلومات القانونية",colorBlack:"أسود",colorGold:"ذهبي",colorIvory:"عاجي",colorBurgundy:"عنابي",imprint:"بيانات الناشر",copyright:"جميع الحقوق محفوظة.",designed:"صُمّم للاستثنائيين"},
+FR:{cart:"Panier",legal:"Mentions légales",colorBlack:"Noir",colorGold:"Or",colorIvory:"Ivoire",colorBurgundy:"Bordeaux",imprint:"Mentions légales",copyright:"Tous droits réservés.",designed:"Conçu pour l’exceptionnel"},
+RU:{cart:"Корзина",legal:"Правовая информация",colorBlack:"Чёрный",colorGold:"Золотой",colorIvory:"Слоновая кость",colorBurgundy:"Бордовый",imprint:"Реквизиты",copyright:"Все права защищены.",designed:"Создано для исключительных"},
+ZH:{cart:"购物袋",legal:"法律信息",colorBlack:"黑色",colorGold:"金色",colorIvory:"象牙白",colorBurgundy:"酒红色",imprint:"法律声明",copyright:"版权所有。",designed:"为非凡而设计"},
+JA:{cart:"バッグ",legal:"法的情報",colorBlack:"ブラック",colorGold:"ゴールド",colorIvory:"アイボリー",colorBurgundy:"バーガンディ",imprint:"法的情報",copyright:"全著作権所有。",designed:"非凡な人のためにデザイン"},
+ES:{cart:"Bolsa",legal:"Información legal",colorBlack:"Negro",colorGold:"Dorado",colorIvory:"Marfil",colorBurgundy:"Burdeos",imprint:"Aviso legal",copyright:"Todos los derechos reservados.",designed:"Diseñado para lo excepcional"},
+IT:{cart:"Borsa",legal:"Informazioni legali",colorBlack:"Nero",colorGold:"Oro",colorIvory:"Avorio",colorBurgundy:"Bordeaux",imprint:"Note legali",copyright:"Tutti i diritti riservati.",designed:"Progettato per l’eccezionale"},
+TR:{cart:"Sepet",legal:"Yasal bilgiler",colorBlack:"Siyah",colorGold:"Altın",colorIvory:"Fildişi",colorBurgundy:"Bordo",imprint:"Yasal bilgiler",copyright:"Tüm hakları saklıdır.",designed:"Seçkinler için tasarlandı"}
 };
 type LanguageContextValue={lang:Language;setLang:(language:Language)=>void;rtl:boolean;t:(key:string)=>string};
 const LanguageContext=createContext<LanguageContextValue|null>(null);
