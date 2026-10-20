@@ -346,3 +346,9 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .checkout-customer-note svg{flex:0 0 auto;color:var(--gold)}
 .checkout-customer-note p{margin:0;line-height:1.7}
 @media(max-width:650px){.subpage-cart-link{padding:7px;gap:5px}.subpage-cart-link span{display:none}}
+
+.panel-quantity{display:flex;align-items:center;gap:8px;margin:7px 0;color:#fff}
+.panel-quantity button{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;cursor:pointer}
+.panel-quantity button:disabled{opacity:.4;cursor:not-allowed}
+.panel-subtotal{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:18px 0 12px;padding:14px 0;border-top:1px solid rgba(212,175,55,.45);color:#fff;font-size:12px}
+.panel-subtotal strong{font-size:15px;color:#fff}
