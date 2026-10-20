@@ -314,3 +314,11 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .hero-collection-gateways a{display:inline-flex;align-items:center;gap:9px;padding:11px 14px;border:1px solid rgba(212,175,55,.65);background:rgba(5,4,4,.82);color:#e8d18a;text-decoration:none;font-family:'Cinzel',Georgia,serif;font-size:12px;letter-spacing:.02em;transition:background .2s,border-color .2s}
 .hero-collection-gateways a:hover{border-color:#ffe599;background:rgba(212,175,55,.12)}
 @media(max-width:520px){.hero-collection-gateways{display:grid;grid-template-columns:1fr}.hero-collection-gateways a{justify-content:center}}
+
+/* Shared NEXORA international language selector */
+.nexora-language-switcher{display:inline-flex;align-items:center;flex-shrink:0}
+.nexora-language-switcher select{min-width:112px;max-width:160px;padding:8px 28px 8px 10px;border:1px solid rgba(212,175,55,.55);border-radius:0;background:#080706;color:#e8d18a;font:500 11px 'Montserrat',Arial,sans-serif;letter-spacing:.04em;cursor:pointer}
+.nexora-language-switcher select:focus-visible{outline:1px solid #d4af37;outline-offset:2px}
+.nexora-language-switcher option{background:#080706;color:#e8d18a}
+[dir="rtl"] .nexora-language-switcher select{padding:8px 10px 8px 28px}
+@media(max-width:600px){.nexora-language-switcher select{min-width:94px;max-width:125px;padding:7px 20px 7px 8px;font-size:10px}}
