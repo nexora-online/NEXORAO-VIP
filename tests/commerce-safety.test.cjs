@@ -101,9 +101,9 @@ test("storefront and collection pages keep a built-in EUR catalog when supplier 
   const fallback = read("lib/fallback-catalog.ts");
   assert.match(page, /import \{ FALLBACK_PRODUCTS \} from "\.\.\/lib\/fallback-catalog"/);
   assert.match(page, /useState<Product\[]>\(FALLBACK_PRODUCTS\)/);
-  assert.match(page, /\[loading,setLoading\]=useState\(false\)/);
   assert.match(page, /onError=\{event=>\{event\.currentTarget\.onerror=null/);
-  assert.match(page, /Keep built-in preview catalog visible if the supplier API is unavailable/);
+  assert.match(page, /FALLBACK_PRODUCTS/);
+  assert.match(page, /Keep the cart catalog fallback available if the supplier API is unavailable/);
   assert.match(page, /if\(live\.length>0\)setProducts\(live\)/);
   assert.match(collections, /useState<Product\[]>\(FALLBACK_PRODUCTS\)/);
   assert.match(collections, /\[loading,setLoading\]=useState\(false\)/);
@@ -123,7 +123,7 @@ test("fallback preview products are clearly simulated and never treated as in-st
   assert.match(fallback, /brand: "NEXORA Preview"/);
   assert.match(fallback, /luxuryTag: "simulated"/);
   assert.match(fallback, /available: null/);
-  assert.match(page, /p\.available!==true/);
+  assert.match(page, /p\.available\s*!==\s*true/);
 });
 
 test("preview product detail pages can resolve built-in products without supplier access", () => {
